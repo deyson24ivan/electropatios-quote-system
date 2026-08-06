@@ -1,0 +1,126 @@
+{
+  "name": "Electropatios Quote Automation Blueprint",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "quote-intake",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-quote-intake",
+      "name": "Webhook Quote Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const quote = $json;\nconst required = ['full_name', 'email', 'phone', 'product_category', 'consent'];\nconst missing = required.filter((field) => !quote[field]);\nif (quote.request_type === 'quote' && !quote.quantity) missing.push('quantity');\nreturn [{ json: { ...quote, is_valid: missing.length === 0, missing_fields: missing } }];"
+      },
+      "id": "validate-quote",
+      "name": "Validate Quote Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.is_valid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-valid-quote",
+      "name": "Is Valid Quote?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/quotes",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "send-to-api",
+      "name": "Send To Quote API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1020, 220]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.quote.priority }}",
+              "operation": "equals",
+              "value2": "high"
+            }
+          ]
+        }
+      },
+      "id": "if-high-priority",
+      "name": "Is High Priority?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1260, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'Invalid quote', missing_fields: $json.missing_fields }) }}"
+      },
+      "id": "invalid-response",
+      "name": "Invalid Quote Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1020, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1500, 220]
+    }
+  ],
+  "connections": {
+    "Webhook Quote Intake": {
+      "main": [[{ "node": "Validate Quote Request", "type": "main", "index": 0 }]]
+    },
+    "Validate Quote Request": {
+      "main": [[{ "node": "Is Valid Quote?", "type": "main", "index": 0 }]]
+    },
+    "Is Valid Quote?": {
+      "main": [
+        [{ "node": "Send To Quote API", "type": "main", "index": 0 }],
+        [{ "node": "Invalid Quote Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send To Quote API": {
+      "main": [[{ "node": "Is High Priority?", "type": "main", "index": 0 }]]
+    },
+    "Is High Priority?": {
+      "main": [
+        [{ "node": "Success Response", "type": "main", "index": 0 }],
+        [{ "node": "Success Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
+
