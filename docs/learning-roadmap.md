@@ -11,7 +11,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 3 - n8n | Lista | Workflow activo para recibir pedidos, validar datos y llamar la API. |
 | Fase 4 - Lead Automation | Lista | Formulario -> n8n -> lead -> fila para Sheets -> notificacion interna. |
 | Fase 5 - CRM / GoHighLevel | Lista en modo seguro | Contacto, oportunidad, tags, pipeline y validacion sin enviar datos reales. |
-| Fase 6 - IA | Pendiente | Preguntas sobre productos, prompts, guardrails y paso a asesor humano. |
+| Fase 6 - IA | Lista en modo seguro | Clasificacion, prompts, guardrails y paso a asesor humano sin modelo externo. |
 | Fase 7 - Voice AI | Pendiente | Agente telefonico para tomar o consultar pedidos. |
 | Fase 8 - WordPress + hosting | Pendiente | Landing, formulario, dominio, DNS y SSL. |
 | Fase 9 - Tracking | Pendiente | Analytics, Tag Manager, Pixel y UTM. |
@@ -48,3 +48,9 @@ Herramientas: Python, Flask, n8n, MySQL, JSON, reglas comerciales, pruebas autom
 Aprendi a preparar una integracion CRM sin tocar una cuenta real. El sistema arma el contacto, prepara la oportunidad, asigna etapa segun prioridad y guarda un intento de sincronizacion para revisar que se enviaria.
 
 Herramientas: GoHighLevel, CRM, pipelines, oportunidades, tags, variables de entorno, modo seguro.
+
+## Fase 6 - IA
+
+Aprendi a usar IA de forma responsable dentro de una automatizacion. El sistema clasifica la intencion del cliente, detecta categoria de producto, aplica guardrails y prepara una respuesta segura con paso a asesor humano cuando hace falta.
+
+Herramientas: IA, prompts, clasificacion, guardrails, human handoff, n8n, pruebas automatizadas.

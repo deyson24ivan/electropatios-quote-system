@@ -42,6 +42,15 @@
 5. La API guarda el intento CRM en modo seguro.
 6. El flujo responde con `crm_sync.mode = safe_mode` y `will_send_to_crm = false`.
 
+## Version 5 con IA en modo seguro
+
+1. n8n recibe el lead creado por la API.
+2. n8n llama a `POST /api/ai/classify`.
+3. La API detecta intencion, categoria, confianza y guardrails.
+4. La API prepara una respuesta segura sin llamar IA externa.
+5. La API decide si el caso requiere handoff humano.
+6. n8n continua hacia Sheets, CRM seguro y notificacion.
+
 ## Casos de error que quiero practicar
 
 - Email invalido.
@@ -61,5 +70,6 @@
 - Sincronizar catalogo e inventario desde una hoja de calculo.
 - Conectar el nodo real de Google Sheets.
 - Conectar GoHighLevel real cuando tengamos credenciales y IDs confirmados.
+- Conectar IA real usando el prompt pack y guardrails ya probados.
 - Crear pipeline CRM con estados: nueva, revisada, cotizada, ganada y perdida.
 - Agregar agente IA que responda preguntas sin inventar precios ni disponibilidad.

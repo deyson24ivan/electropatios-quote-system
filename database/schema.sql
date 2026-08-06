@@ -126,6 +126,31 @@ CREATE TABLE IF NOT EXISTS crm_sync_attempts (
   INDEX idx_crm_syncs_created_at (created_at)
 );
 
+-- Analisis de IA en modo seguro: clasifica y prepara respuesta sin llamar a un modelo externo.
+CREATE TABLE IF NOT EXISTS ai_safe_analyses (
+  id CHAR(36) PRIMARY KEY,
+  lead_id CHAR(36) NULL,
+  quote_id CHAR(36) NULL,
+  mode VARCHAR(80) NOT NULL DEFAULT 'safe_mode',
+  status VARCHAR(80) NOT NULL DEFAULT 'safe_reply_prepared',
+  will_call_ai_model BOOLEAN NOT NULL DEFAULT FALSE,
+  intent VARCHAR(80) NOT NULL DEFAULT 'unknown',
+  category VARCHAR(80) NOT NULL DEFAULT 'otros',
+  confidence VARCHAR(40) NOT NULL DEFAULT 'low',
+  handoff_required BOOLEAN NOT NULL DEFAULT TRUE,
+  handoff_reason VARCHAR(120) NOT NULL DEFAULT 'baja_confianza',
+  safe_reply TEXT,
+  guardrails_json JSON NULL,
+  suggested_tags_json JSON NULL,
+  prompt_pack_json JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_ai_lead_id (lead_id),
+  INDEX idx_ai_quote_id (quote_id),
+  INDEX idx_ai_intent (intent),
+  INDEX idx_ai_handoff (handoff_required),
+  INDEX idx_ai_created_at (created_at)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

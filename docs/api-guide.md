@@ -32,6 +32,9 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | GET | `/api/notifications` | Lista notificaciones guardadas localmente. |
 | POST | `/api/crm/sync` | Prepara sincronizacion segura con GoHighLevel. |
 | GET | `/api/crm/syncs` | Lista intentos CRM guardados localmente. |
+| POST | `/api/ai/classify` | Clasifica intencion, categoria y handoff en modo seguro. |
+| POST | `/api/ai/assist` | Prepara una respuesta segura para el cliente. |
+| GET | `/api/ai/analyses` | Lista analisis de IA guardados localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -177,6 +180,32 @@ La API responde algo como:
 ```
 
 Eso quiere decir: el sistema ya sabe que mandaria, pero todavia no envio nada real.
+
+## Respuesta IA en modo seguro
+
+n8n llama a:
+
+```text
+POST http://localhost:5000/api/ai/classify
+```
+
+La API responde algo como:
+
+```json
+{
+  "ok": true,
+  "ai_analysis": {
+    "mode": "safe_mode",
+    "intent": "quote",
+    "category": "cable",
+    "confidence": "high",
+    "handoff_required": true,
+    "will_call_ai_model": false
+  }
+}
+```
+
+Eso significa que la IA clasifico el caso, pero no llamo ningun modelo externo.
 
 ## Respuesta cuando faltan datos
 

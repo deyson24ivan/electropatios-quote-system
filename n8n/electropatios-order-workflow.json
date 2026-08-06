@@ -94,13 +94,29 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/ai/classify",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "ai-classify-safe-mode",
+      "name": "AI Classify Safe Mode",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1500, 220],
+      "notesInFlow": true,
+      "notes": "Esta caja clasifica intencion, categoria, guardrails y si debe pasar a asesor, sin llamar IA externa."
+    },
+    {
+      "parameters": {
         "jsCode": "// Dejo la fila lista para Google Sheets.\n// Todavia no escribo en Sheets porque falta conectar credenciales de Google.\nconst lead = $json.lead ?? {};\nconst sheetRow = $json.sheet_row ?? lead.sheet_row ?? {};\n\nreturn [{\n  json: {\n    ...$json,\n    sheet_row: sheetRow,\n    sheet_status: 'ready_for_google_sheets',\n  }\n}];"
       },
       "id": "prepare-sheets-row",
       "name": "Prepare Sheets Row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1500, 220],
+      "position": [1740, 220],
       "notesInFlow": true,
       "notes": "Aqui queda la fila que despues se puede mandar a Google Sheets con un nodo Append Row."
     },
@@ -116,7 +132,7 @@
       "name": "Sync CRM Safe Mode",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [1740, 220],
+      "position": [1980, 220],
       "notesInFlow": true,
       "notes": "Esta caja prepara contacto y oportunidad para GoHighLevel, pero no envia nada real mientras estemos en modo seguro."
     },
@@ -147,7 +163,7 @@
       "name": "Is High Priority?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1980, 220],
+      "position": [2220, 220],
       "notesInFlow": true,
       "notes": "Aqui reviso si el lead comercial quedo como prioridad alta."
     },
@@ -159,7 +175,7 @@
       "name": "Prepare Advisor Notification",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2220, 140],
+      "position": [2460, 140],
       "notesInFlow": true,
       "notes": "Esta caja arma el mensaje que mas adelante puede ir por WhatsApp, email o GoHighLevel."
     },
@@ -175,7 +191,7 @@
       "name": "Save Advisor Notification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [2460, 140],
+      "position": [2700, 140],
       "notesInFlow": true,
       "notes": "Guarda la notificacion preparada para el asesor. Luego este nodo puede cambiarse por email, WhatsApp o tarea en GoHighLevel."
     },
@@ -195,13 +211,13 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, quote_duplicate: $json.quote_duplicate, lead_duplicate: $json.lead_duplicate, priority: $json.lead.priority, status: $json.lead.pipeline_stage, quote_id: $json.quote.id, lead_id: $json.lead.id, quote: $json.quote, lead: $json.lead, sheet_row: $json.sheet_row, crm_sync: $json.crm_sync, notification: $json.notification }) }}"
+        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, quote_duplicate: $json.quote_duplicate, lead_duplicate: $json.lead_duplicate, priority: $json.lead.priority, status: $json.lead.pipeline_stage, quote_id: $json.quote.id, lead_id: $json.lead.id, quote: $json.quote, lead: $json.lead, ai_analysis: $json.ai_analysis, sheet_row: $json.sheet_row, crm_sync: $json.crm_sync, notification: $json.notification }) }}"
       },
       "id": "success-response",
       "name": "Success Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [2700, 220],
+      "position": [2940, 220],
       "notesInFlow": true,
       "notes": "Esta es la respuesta que vuelve a la pagina o a la prueba manual cuando todo salio bien."
     }
@@ -223,6 +239,9 @@
       "main": [[{ "node": "Create Lead Record", "type": "main", "index": 0 }]]
     },
     "Create Lead Record": {
+      "main": [[{ "node": "AI Classify Safe Mode", "type": "main", "index": 0 }]]
+    },
+    "AI Classify Safe Mode": {
       "main": [[{ "node": "Prepare Sheets Row", "type": "main", "index": 0 }]]
     },
     "Prepare Sheets Row": {

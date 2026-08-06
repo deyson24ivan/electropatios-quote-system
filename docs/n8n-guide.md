@@ -14,6 +14,7 @@ Pagina Electropatios
   -> Validacion en n8n
   -> API Python /api/quotes
   -> API Python /api/leads
+  -> IA segura /api/ai/classify
   -> Preparacion para Sheets
   -> CRM GoHighLevel en modo seguro
   -> Respuesta al cliente
@@ -46,6 +47,7 @@ n8n/electropatios-order-workflow.json
 | Is Valid Order? | Decide si el pedido sigue o responde error. |
 | Send To Quote API | Envia el pedido a `http://127.0.0.1:5000/api/quotes`. |
 | Create Lead Record | Convierte la cotizacion en lead usando `http://127.0.0.1:5000/api/leads`. |
+| AI Classify Safe Mode | Clasifica intencion, categoria, guardrails y handoff sin IA externa. |
 | Prepare Sheets Row | Deja lista la fila que despues ira a Google Sheets. |
 | Sync CRM Safe Mode | Prepara contacto y oportunidad para GoHighLevel sin enviar datos reales. |
 | Is High Priority? | Revisa si el lead debe atenderse hoy. |
@@ -109,10 +111,11 @@ Si todo esta bien:
 3. n8n envia el pedido a la API de Python.
 4. La API guarda la solicitud y calcula prioridad.
 5. n8n crea un lead comercial.
-6. n8n prepara una fila para Sheets.
-7. n8n prepara el contacto y la oportunidad de GoHighLevel en modo seguro.
-8. Si es urgente, n8n guarda una notificacion interna.
-9. n8n responde algo como:
+6. n8n clasifica el caso con IA en modo seguro.
+7. n8n prepara una fila para Sheets.
+8. n8n prepara el contacto y la oportunidad de GoHighLevel en modo seguro.
+9. Si es urgente, n8n guarda una notificacion interna.
+10. n8n responde algo como:
 
 ```json
 {
@@ -122,6 +125,10 @@ Si todo esta bien:
   "status": "contactar_hoy",
   "quote_id": "...",
   "lead_id": "...",
+  "ai_analysis": {
+    "intent": "quote",
+    "handoff_required": true
+  },
   "crm_sync": {
     "mode": "safe_mode",
     "status": "dry_run_prepared"
@@ -159,4 +166,4 @@ El webhook activo respondio correctamente con un pedido de carrito:
 
 ## Como lo explicaria en entrevista
 
-Use n8n como orquestador entre el formulario y la API. El formulario envia un pedido por webhook, n8n valida campos minimos, llama a una API REST propia, convierte la cotizacion en lead, prepara la fila para Google Sheets, llama el modo seguro de GoHighLevel y guarda una notificacion interna si el pedido es urgente.
+Use n8n como orquestador entre el formulario y la API. El formulario envia un pedido por webhook, n8n valida campos minimos, llama a una API REST propia, convierte la cotizacion en lead, clasifica el caso con IA segura, prepara la fila para Google Sheets, llama el modo seguro de GoHighLevel y guarda una notificacion interna si el pedido es urgente.

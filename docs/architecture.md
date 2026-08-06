@@ -23,9 +23,10 @@ flowchart TD
   M --> O["Prioridad high/medium/low"]
   N --> O
   O --> P["POST /api/leads"]
-  P --> Q["Fila lista para Sheets"]
-  P --> R["GoHighLevel modo seguro"]
-  P --> S["Notificacion interna"]
+  P --> Q["IA modo seguro"]
+  Q --> R["Fila lista para Sheets"]
+  Q --> S["GoHighLevel modo seguro"]
+  Q --> T["Notificacion interna"]
 ```
 
 ## Contrato de datos
@@ -60,6 +61,7 @@ flowchart TD
 - Si MySQL falla, guardar respaldo local y registrar el error.
 - Convertir la cotizacion en lead comercial para seguimiento.
 - Preparar datos para Sheets y GoHighLevel sin enviar datos reales todavia.
+- Clasificar intencion con IA segura y pasar a asesor cuando falte informacion confirmada.
 
 ## Catalogo base
 

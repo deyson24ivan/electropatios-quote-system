@@ -9,10 +9,12 @@ from typing import Any
 from flask import Flask, jsonify, request
 
 try:
+    from .ai_logic import build_ai_analysis
     from .ghl_logic import build_crm_sync_record
     from .lead_logic import build_lead_record, build_notification
     from .quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
 except ImportError:
+    from ai_logic import build_ai_analysis
     from ghl_logic import build_crm_sync_record
     from lead_logic import build_lead_record, build_notification
     from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
@@ -25,6 +27,7 @@ QUOTES_FILE = DATA_DIR / "quotes.jsonl"
 LEADS_FILE = DATA_DIR / "leads.jsonl"
 NOTIFICATIONS_FILE = DATA_DIR / "notifications.jsonl"
 CRM_SYNCS_FILE = DATA_DIR / "crm_syncs.jsonl"
+AI_ANALYSES_FILE = DATA_DIR / "ai_analyses.jsonl"
 ERRORS_FILE = DATA_DIR / "automation_errors.jsonl"
 
 app = Flask(__name__)
@@ -102,6 +105,11 @@ def read_local_notifications() -> list[dict[str, Any]]:
 # Lee los intentos CRM preparados en modo seguro.
 def read_local_crm_syncs() -> list[dict[str, Any]]:
     return read_jsonl(CRM_SYNCS_FILE)
+
+
+# Lee las respuestas y clasificaciones de IA guardadas en modo seguro.
+def read_local_ai_analyses() -> list[dict[str, Any]]:
+    return read_jsonl(AI_ANALYSES_FILE)
 
 
 # Busca si ya existe una solicitud exactamente igual en el respaldo local.
@@ -340,6 +348,40 @@ def save_mysql_crm_sync(sync: dict[str, Any]) -> None:
         connection.commit()
 
 
+# Guarda una clasificacion IA. En esta fase no hay llamada a un modelo externo.
+def save_mysql_ai_analysis(analysis: dict[str, Any]) -> None:
+    analysis_for_mysql = {
+        **analysis,
+        "handoff_required": bool(analysis.get("handoff_required")),
+        "will_call_ai_model": bool(analysis.get("will_call_ai_model")),
+        "guardrails_json": json.dumps(analysis.get("guardrails", []), ensure_ascii=True),
+        "suggested_tags_json": json.dumps(analysis.get("suggested_tags", []), ensure_ascii=True),
+        "prompt_pack_json": json.dumps(analysis.get("prompt_pack", {}), ensure_ascii=True),
+        "created_at": mysql_datetime(analysis.get("created_at")),
+    }
+    with mysql_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO ai_safe_analyses (
+                id, lead_id, quote_id, mode, status, will_call_ai_model,
+                intent, category, confidence, handoff_required, handoff_reason,
+                safe_reply, guardrails_json, suggested_tags_json, prompt_pack_json,
+                created_at
+            )
+            VALUES (
+                %(id)s, %(lead_id)s, %(quote_id)s, %(mode)s, %(status)s,
+                %(will_call_ai_model)s, %(intent)s, %(category)s, %(confidence)s,
+                %(handoff_required)s, %(handoff_reason)s, %(safe_reply)s,
+                %(guardrails_json)s, %(suggested_tags_json)s, %(prompt_pack_json)s,
+                %(created_at)s
+            )
+            """,
+            analysis_for_mysql,
+        )
+        connection.commit()
+
+
 # Decide donde guardar: primero intenta MySQL; si falla, usa archivo local.
 def save_quote(quote: dict[str, Any]) -> dict[str, Any]:
     if mysql_configured():
@@ -436,6 +478,26 @@ def save_crm_sync(sync: dict[str, Any]) -> str:
     return "local_jsonl"
 
 
+# Guarda el resultado de la IA segura para poder revisar intencion, guardrails y handoff.
+def save_ai_analysis(analysis: dict[str, Any]) -> str:
+    if mysql_configured():
+        try:
+            save_mysql_ai_analysis(analysis)
+            return "mysql"
+        except Exception as exc:
+            append_jsonl(
+                ERRORS_FILE,
+                {
+                    "error": str(exc),
+                    "fallback": "local_jsonl",
+                    "ai_analysis": analysis,
+                },
+            )
+
+    append_jsonl(AI_ANALYSES_FILE, analysis)
+    return "local_jsonl"
+
+
 # Flujo completo del formulario: recibe, valida, guarda y responde.
 def handle_quote_request():
     payload = request.get_json(silent=True) or {}
@@ -495,6 +557,18 @@ def handle_crm_sync_request():
 
     storage = save_crm_sync(sync)
     return jsonify({"ok": True, **payload, "crm_sync_storage": storage, "crm_sync": sync}), 201
+
+
+# Prepara una clasificacion y una respuesta segura sin llamar a IA externa.
+def handle_ai_request():
+    payload = request.get_json(silent=True) or {}
+    analysis, errors = build_ai_analysis(payload)
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors, "ai_analysis": analysis}), 400
+
+    storage = save_ai_analysis(analysis)
+    return jsonify({"ok": True, **payload, "ai_analysis_storage": storage, "ai_analysis": analysis}), 201
 
 
 # Endpoint sencillo para revisar si la API esta viva.
@@ -586,6 +660,35 @@ def list_crm_syncs():
         return jsonify({"ok": False, "error": "invalid admin token"}), 401
 
     return jsonify({"ok": True, "crm_syncs": read_local_crm_syncs()})
+
+
+@app.route("/api/ai/classify", methods=["OPTIONS"])
+def ai_classify_options():
+    return "", 204
+
+
+@app.route("/api/ai/classify", methods=["POST"])
+def create_ai_classification():
+    return handle_ai_request()
+
+
+@app.route("/api/ai/assist", methods=["OPTIONS"])
+def ai_assist_options():
+    return "", 204
+
+
+@app.route("/api/ai/assist", methods=["POST"])
+def create_ai_assist():
+    return handle_ai_request()
+
+
+@app.route("/api/ai/analyses", methods=["GET"])
+def list_ai_analyses():
+    expected_token = os.getenv("ADMIN_TOKEN")
+    if expected_token and request.args.get("token") != expected_token:
+        return jsonify({"ok": False, "error": "invalid admin token"}), 401
+
+    return jsonify({"ok": True, "ai_analyses": read_local_ai_analyses()})
 
 
 if __name__ == "__main__":

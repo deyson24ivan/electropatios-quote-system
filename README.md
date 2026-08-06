@@ -14,6 +14,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Conversion de cotizaciones en leads comerciales.
 - Fila preparada para Google Sheets.
 - Modo seguro de GoHighLevel para preparar contactos y oportunidades sin enviar datos reales.
+- IA en modo seguro para clasificar pedidos, aplicar guardrails y preparar handoff humano.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -26,10 +27,12 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 electropatios-quote-system/
 |-- backend/
 |   |-- app.py
+|   |-- ai_logic.py
 |   |-- ghl_logic.py
 |   |-- lead_logic.py
 |   |-- quote_logic.py
 |   `-- tests/
+|       |-- test_ai_logic.py
 |       |-- test_ghl_logic.py
 |       |-- test_lead_logic.py
 |       `-- test_quote_logic.py
@@ -40,6 +43,7 @@ electropatios-quote-system/
 |-- docs/
 |   |-- architecture.md
 |   |-- api-guide.md
+|   |-- ai-safe-mode-guide.md
 |   |-- gohighlevel-safe-mode-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
@@ -115,6 +119,12 @@ Para entender la preparacion segura de GoHighLevel, revisa:
 docs/gohighlevel-safe-mode-guide.md
 ```
 
+Para entender la IA segura, revisa:
+
+```text
+docs/ai-safe-mode-guide.md
+```
+
 Cuando n8n este corriendo, su editor local queda en:
 
 ```text
@@ -133,11 +143,12 @@ flowchart LR
   F --> G["MySQL o respaldo local"]
   G --> H["Prioridad comercial"]
   H --> I["API /api/leads"]
-  I --> J["Fila para Google Sheets"]
-  I --> K["Modo seguro GoHighLevel"]
-  I --> L["Notificacion al asesor"]
+  I --> J["IA modo seguro"]
+  J --> K["Fila para Google Sheets"]
+  J --> L["Modo seguro GoHighLevel"]
+  J --> M["Notificacion al asesor"]
 ```
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, crea un lead comercial y prepara una sincronizacion segura con GoHighLevel antes de conectar credenciales reales.
+Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails y prepara sincronizacion CRM sin enviar datos reales.

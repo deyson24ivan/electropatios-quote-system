@@ -14,10 +14,11 @@ POST http://127.0.0.1:5678/webhook/electropatios-order
 2. Validar campos minimos.
 3. Enviar el payload a la API local.
 4. Crear el lead comercial.
-5. Preparar una fila para Google Sheets.
-6. Preparar datos para GoHighLevel en modo seguro.
-7. Guardar una notificacion interna cuando sea prioridad alta.
-8. Responder al formulario o prueba manual.
+5. Clasificar el caso con IA en modo seguro.
+6. Preparar una fila para Google Sheets.
+7. Preparar datos para GoHighLevel en modo seguro.
+8. Guardar una notificacion interna cuando sea prioridad alta.
+9. Responder al formulario o prueba manual.
 
 ## Pendiente al importarlo
 
@@ -26,6 +27,7 @@ POST http://127.0.0.1:5678/webhook/electropatios-order
 - Configurar credenciales de Google Sheets.
 - Conectar el nodo real de Google Sheets.
 - Conectar GoHighLevel real cuando existan token, location, pipeline y stages.
+- Conectar IA real cuando tengamos prompts y guardrails suficientemente probados.
 - Configurar credenciales de email, WhatsApp o Slack.
 - Agregar manejo de errores por nodo.
 - Agregar retry para APIs externas.
