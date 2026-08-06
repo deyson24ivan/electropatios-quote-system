@@ -26,6 +26,10 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | GET | `/api/catalog` | Devuelve categorias de productos. |
 | POST | `/api/quotes` | Recibe una cotizacion nueva. |
 | GET | `/api/quotes` | Lista cotizaciones guardadas localmente. |
+| POST | `/api/leads` | Convierte una cotizacion guardada en lead comercial. |
+| GET | `/api/leads` | Lista leads guardados localmente. |
+| POST | `/api/notifications` | Guarda una notificacion preparada para el asesor. |
+| GET | `/api/notifications` | Lista notificaciones guardadas localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -108,6 +112,40 @@ arme un pedido y Electropatios confirme precio, disponibilidad y entrega.
 }
 ```
 
+## Respuesta de lead automation
+
+Despues de guardar la cotizacion, n8n llama a:
+
+```text
+POST http://localhost:5000/api/leads
+```
+
+Ese endpoint responde con datos listos para seguimiento:
+
+```json
+{
+  "ok": true,
+  "lead": {
+    "full_name": "Ana Perez",
+    "priority": "high",
+    "pipeline_stage": "contactar_hoy"
+  },
+  "sheet_row": {
+    "nombre": "Ana Perez",
+    "telefono": "+573001234567",
+    "prioridad": "high"
+  },
+  "ghl_payloads": {
+    "contact": {
+      "firstName": "Ana",
+      "email": "ana@example.com"
+    }
+  }
+}
+```
+
+En la Fase 5 usaremos esa parte de `ghl_payloads` para hablar con GoHighLevel.
+
 ## Respuesta cuando faltan datos
 
 ```json
@@ -141,4 +179,4 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/quotes" -Method Post -ContentT
 
 ## Como lo explicaria en entrevista
 
-El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP con un metodo POST a mi API en Python. La API valida la solicitud, calcula prioridad comercial, detecta duplicados y responde con un JSON para que la pagina sepa si todo salio bien.
+El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM.

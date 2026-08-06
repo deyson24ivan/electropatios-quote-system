@@ -1,6 +1,6 @@
 # Arquitectura
 
-Este proyecto esta disenado como una plataforma de cotizaciones para Electropatios. La primera version funciona con una pagina web y una API local. En la fase de n8n, el pedido tambien puede entrar por un webhook para despues conectarse con Google Sheets, CRM, email e IA.
+Este proyecto esta disenado como una plataforma de cotizaciones para Electropatios. La pagina recibe pedidos reales de productos electricos, n8n orquesta el flujo y la API guarda cotizaciones, leads y notificaciones.
 
 ## Flujo principal
 
@@ -22,7 +22,10 @@ flowchart TD
   L -- "Si" --> N["Evento quote_request_created"]
   M --> O["Prioridad high/medium/low"]
   N --> O
-  O --> P["CRM / Sheets / Email / Notificacion"]
+  O --> P["POST /api/leads"]
+  P --> Q["Fila lista para Sheets"]
+  P --> R["Payload listo para GoHighLevel"]
+  P --> S["Notificacion interna"]
 ```
 
 ## Contrato de datos
@@ -55,6 +58,8 @@ flowchart TD
 - Clasificar como `medium` si hay potencial comercial pero falta confirmar precio, disponibilidad o entrega.
 - Clasificar como `low` si es una pregunta inicial que requiere asesoria o seguimiento posterior.
 - Si MySQL falla, guardar respaldo local y registrar el error.
+- Convertir la cotizacion en lead comercial para seguimiento.
+- Preparar datos para Sheets y GoHighLevel sin conectarlos todavia.
 
 ## Catalogo base
 

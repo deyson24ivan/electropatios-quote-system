@@ -13,15 +13,19 @@ POST http://127.0.0.1:5678/webhook/electropatios-order
 1. Recibir un pedido desde la pagina de Electropatios por webhook.
 2. Validar campos minimos.
 3. Enviar el payload a la API local.
-4. Separar solicitudes de prioridad alta del resto.
-5. Preparar mensaje para el asesor cuando sea prioridad alta.
-6. Responder al formulario o prueba manual.
+4. Crear el lead comercial.
+5. Preparar una fila para Google Sheets.
+6. Preparar datos para GoHighLevel.
+7. Guardar una notificacion interna cuando sea prioridad alta.
+8. Responder al formulario o prueba manual.
 
 ## Pendiente al importarlo
 
 - Cambiar URLs locales por URLs reales.
 - Activar el workflow cuando ya este probado.
 - Configurar credenciales de Google Sheets.
+- Conectar el nodo real de Google Sheets.
+- Conectar GoHighLevel en la siguiente fase.
 - Configurar credenciales de email, WhatsApp o Slack.
 - Agregar manejo de errores por nodo.
 - Agregar retry para APIs externas.

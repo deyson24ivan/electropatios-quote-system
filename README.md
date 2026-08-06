@@ -11,6 +11,10 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - API REST en Python para recibir solicitudes comerciales.
 - Validacion de datos antes de guardar o automatizar.
 - Clasificacion interna por prioridad: `high`, `medium` o `low`.
+- Conversion de cotizaciones en leads comerciales.
+- Fila preparada para Google Sheets.
+- Datos preparados para la siguiente fase con GoHighLevel.
+- Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
 - Base lista para conectar n8n, Google Sheets, email, CRM y agentes IA.
@@ -22,8 +26,10 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 electropatios-quote-system/
 |-- backend/
 |   |-- app.py
+|   |-- lead_logic.py
 |   |-- quote_logic.py
 |   `-- tests/
+|       |-- test_lead_logic.py
 |       `-- test_quote_logic.py
 |-- database/
 |   `-- schema.sql
@@ -32,6 +38,7 @@ electropatios-quote-system/
 |-- docs/
 |   |-- architecture.md
 |   |-- api-guide.md
+|   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
 |   |-- learning-roadmap.md
 |   `-- workflows/
@@ -72,7 +79,7 @@ http://localhost:5000
 El formulario envia solicitudes a:
 
 ```text
-http://localhost:5000/api/quotes
+http://127.0.0.1:5678/webhook/electropatios-order
 ```
 
 Tambien puedes consultar el catalogo base:
@@ -93,6 +100,12 @@ Para entender el primer workflow de n8n, revisa:
 docs/n8n-guide.md
 ```
 
+Para entender como la cotizacion se convierte en lead, revisa:
+
+```text
+docs/lead-automation-guide.md
+```
+
 Cuando n8n este corriendo, su editor local queda en:
 
 ```text
@@ -110,11 +123,12 @@ flowchart LR
   E --> F["Deteccion de solicitud repetida"]
   F --> G["MySQL o respaldo local"]
   G --> H["Prioridad comercial"]
-  H --> I["CRM pipeline"]
-  H --> J["Google Sheets"]
-  H --> K["Notificacion al asesor"]
+  H --> I["API /api/leads"]
+  I --> J["Fila para Google Sheets"]
+  I --> K["Payload para GoHighLevel"]
+  I --> L["Notificacion al asesor"]
 ```
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, registra la informacion y deja la base lista para integrarse con n8n, CRM, Google Sheets, email e IA.
+Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, registra la informacion, crea un lead comercial y deja la base lista para integrarse con Google Sheets, GoHighLevel, email e IA.

@@ -78,6 +78,34 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "create-lead-record",
+      "name": "Create Lead Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1260, 220],
+      "notesInFlow": true,
+      "notes": "Esta caja convierte la cotizacion guardada en un lead comercial listo para Sheets y GoHighLevel."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dejo la fila lista para Google Sheets.\n// Todavia no escribo en Sheets porque falta conectar credenciales de Google.\nconst lead = $json.lead ?? {};\nconst sheetRow = $json.sheet_row ?? lead.sheet_row ?? {};\n\nreturn [{\n  json: {\n    ...$json,\n    sheet_row: sheetRow,\n    sheet_status: 'ready_for_google_sheets',\n  }\n}];"
+      },
+      "id": "prepare-sheets-row",
+      "name": "Prepare Sheets Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 220],
+      "notesInFlow": true,
+      "notes": "Aqui queda la fila que despues se puede mandar a Google Sheets con un nodo Append Row."
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -88,7 +116,7 @@
           "conditions": [
             {
               "id": "quote-is-high-priority",
-              "leftValue": "={{ $json.quote.priority }}",
+              "leftValue": "={{ $json.lead.priority }}",
               "rightValue": "high",
               "operator": {
                 "type": "string",
@@ -103,29 +131,37 @@
       "name": "Is High Priority?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1260, 220],
+      "position": [1740, 220],
       "notesInFlow": true,
-      "notes": "Aqui reviso si la API marco el pedido como prioridad alta."
+      "notes": "Aqui reviso si el lead comercial quedo como prioridad alta."
     },
     {
       "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "advisor_message",
-              "value": "={{ 'Pedido prioritario de ' + $json.quote.full_name + ': ' + $json.quote.quantity + ' producto(s). Revisar precio, disponibilidad y entrega.' }}"
-            }
-          ]
-        },
-        "options": {}
+        "jsCode": "// Preparo el aviso para el asesor, pero mantengo todos los datos del lead.\nconst lead = $json.lead ?? {};\nconst message = $json.advisor_message ?? lead.advisor_message ?? `Nuevo lead prioritario: ${lead.full_name ?? 'cliente por revisar'}`;\n\nreturn [{\n  json: {\n    ...$json,\n    advisor_message: message,\n    notification_payload: {\n      lead,\n      quote: $json.quote,\n      advisor_message: message,\n      channel: 'advisor_inbox',\n    },\n  }\n}];"
       },
       "id": "prepare-priority-message",
-      "name": "Prepare Priority Message",
-      "type": "n8n-nodes-base.set",
+      "name": "Prepare Advisor Notification",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1500, 140],
+      "position": [1980, 140],
       "notesInFlow": true,
-      "notes": "Esta caja deja listo el mensaje que luego se puede mandar por WhatsApp, email o CRM."
+      "notes": "Esta caja arma el mensaje que mas adelante puede ir por WhatsApp, email o GoHighLevel."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/notifications",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "save-advisor-notification",
+      "name": "Save Advisor Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 140],
+      "notesInFlow": true,
+      "notes": "Guarda la notificacion preparada para el asesor. Luego este nodo puede cambiarse por email, WhatsApp o tarea en GoHighLevel."
     },
     {
       "parameters": {
@@ -143,13 +179,13 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, priority: $json.quote.priority, status: $json.quote.status, quote_id: $json.quote.id, quote: $json.quote }) }}"
+        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, quote_duplicate: $json.quote_duplicate, lead_duplicate: $json.lead_duplicate, priority: $json.lead.priority, status: $json.lead.pipeline_stage, quote_id: $json.quote.id, lead_id: $json.lead.id, quote: $json.quote, lead: $json.lead, sheet_row: $json.sheet_row, notification: $json.notification }) }}"
       },
       "id": "success-response",
       "name": "Success Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1740, 220],
+      "position": [2460, 220],
       "notesInFlow": true,
       "notes": "Esta es la respuesta que vuelve a la pagina o a la prueba manual cuando todo salio bien."
     }
@@ -168,15 +204,24 @@
       ]
     },
     "Send To Quote API": {
+      "main": [[{ "node": "Create Lead Record", "type": "main", "index": 0 }]]
+    },
+    "Create Lead Record": {
+      "main": [[{ "node": "Prepare Sheets Row", "type": "main", "index": 0 }]]
+    },
+    "Prepare Sheets Row": {
       "main": [[{ "node": "Is High Priority?", "type": "main", "index": 0 }]]
     },
     "Is High Priority?": {
       "main": [
-        [{ "node": "Prepare Priority Message", "type": "main", "index": 0 }],
+        [{ "node": "Prepare Advisor Notification", "type": "main", "index": 0 }],
         [{ "node": "Success Response", "type": "main", "index": 0 }]
       ]
     },
-    "Prepare Priority Message": {
+    "Prepare Advisor Notification": {
+      "main": [[{ "node": "Save Advisor Notification", "type": "main", "index": 0 }]]
+    },
+    "Save Advisor Notification": {
       "main": [[{ "node": "Success Response", "type": "main", "index": 0 }]]
     }
   },

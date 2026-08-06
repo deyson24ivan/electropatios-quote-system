@@ -9,7 +9,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 1 - Git/GitHub | Lista | Repositorio privado, commits, README y `.gitignore`. |
 | Fase 2 - Webhook + API | Lista | API Flask con `GET /health`, `GET /api/catalog` y `POST /api/quotes`. |
 | Fase 3 - n8n | Lista | Workflow activo para recibir pedidos, validar datos y llamar la API. |
-| Fase 4 - Lead Automation | Pendiente | Formulario -> n8n -> MySQL -> Sheets -> notificacion. |
+| Fase 4 - Lead Automation | Lista | Formulario -> n8n -> lead -> fila para Sheets -> notificacion interna. |
 | Fase 5 - CRM / GoHighLevel | Pendiente | Contactos, pipelines, tags, triggers y workflows. |
 | Fase 6 - IA | Pendiente | Preguntas sobre productos, prompts, guardrails y paso a asesor humano. |
 | Fase 7 - Voice AI | Pendiente | Agente telefonico para tomar o consultar pedidos. |
@@ -36,3 +36,9 @@ Herramientas: HTML, CSS, JavaScript, Python, Flask, HTTP, JSON.
 Aprendi a usar n8n como orquestador. n8n recibe el pedido por webhook, valida campos, llama la API y deja el camino listo para notificaciones o Google Sheets.
 
 Herramientas: n8n, webhooks, nodo HTTP, nodo IF, manejo basico de errores.
+
+## Fase 4 - Lead Automation
+
+Aprendi a convertir una cotizacion en un lead comercial. El sistema prepara datos para seguimiento, una fila para Google Sheets, una estructura para GoHighLevel y una notificacion interna cuando la prioridad es alta.
+
+Herramientas: Python, Flask, n8n, MySQL, JSON, reglas comerciales, pruebas automatizadas.

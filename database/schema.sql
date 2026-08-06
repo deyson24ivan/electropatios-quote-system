@@ -51,6 +51,62 @@ CREATE TABLE IF NOT EXISTS quote_events (
   INDEX idx_quote_events_type (event_type)
 );
 
+-- Tabla comercial: cada cotizacion se convierte en un lead que puede ir a Sheets o CRM.
+CREATE TABLE IF NOT EXISTS lead_records (
+  id CHAR(36) PRIMARY KEY,
+  duplicate_key VARCHAR(255) NOT NULL UNIQUE,
+  quote_id CHAR(36) NOT NULL,
+  full_name VARCHAR(160) NOT NULL,
+  first_name VARCHAR(80) NULL,
+  last_name VARCHAR(120) NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(40) NOT NULL,
+  company_name VARCHAR(180) NULL,
+  customer_type VARCHAR(80) NOT NULL DEFAULT 'persona',
+  delivery_city VARCHAR(120) NOT NULL DEFAULT 'Cucuta',
+  product_category VARCHAR(80) NOT NULL,
+  products_summary TEXT,
+  quantity INT UNSIGNED NOT NULL DEFAULT 0,
+  urgency VARCHAR(60) NOT NULL DEFAULT 'this_week',
+  priority ENUM('high', 'medium', 'low') NOT NULL DEFAULT 'low',
+  lead_score TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  pipeline_stage VARCHAR(80) NOT NULL DEFAULT 'nutrir_o_asesorar',
+  follow_up_status VARCHAR(80) NOT NULL DEFAULT 'pendiente',
+  task_due_at TIMESTAMP NULL,
+  estimated_value_cop BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  source VARCHAR(100) NOT NULL DEFAULT 'electropatios_web',
+  notes TEXT,
+  tags_json JSON NULL,
+  sheet_row_json JSON NULL,
+  ghl_payloads_json JSON NULL,
+  advisor_message TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_records_quote
+    FOREIGN KEY (quote_id) REFERENCES quote_requests(id)
+    ON DELETE CASCADE,
+  INDEX idx_leads_quote_id (quote_id),
+  INDEX idx_leads_email (email),
+  INDEX idx_leads_phone (phone),
+  INDEX idx_leads_priority_stage (priority, pipeline_stage),
+  INDEX idx_leads_created_at (created_at)
+);
+
+-- Notificaciones preparadas para el asesor. Luego esto puede reemplazarse por email, WhatsApp o GoHighLevel task.
+CREATE TABLE IF NOT EXISTS advisor_notifications (
+  id CHAR(36) PRIMARY KEY,
+  lead_id CHAR(36) NULL,
+  quote_id CHAR(36) NULL,
+  channel VARCHAR(80) NOT NULL DEFAULT 'advisor_inbox',
+  priority ENUM('high', 'medium', 'low') NOT NULL DEFAULT 'medium',
+  message TEXT NOT NULL,
+  status VARCHAR(80) NOT NULL DEFAULT 'prepared',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_notifications_lead_id (lead_id),
+  INDEX idx_notifications_quote_id (quote_id),
+  INDEX idx_notifications_status (status)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
