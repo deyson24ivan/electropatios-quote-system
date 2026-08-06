@@ -118,16 +118,16 @@ Si todo esta bien:
 La pagina ya quedo preparada para esto. En `frontend/script.js` hay una opcion llamada:
 
 ```javascript
-const USE_N8N_WEBHOOK = false;
-```
-
-Cuando el workflow este activo en n8n, se cambia a:
-
-```javascript
 const USE_N8N_WEBHOOK = true;
 ```
 
-Asi el pedido ya no va directo a Python, sino primero al webhook de n8n.
+Con ese valor, el pedido va primero al webhook de n8n. Si n8n esta apagado y quieres probar solo la API de Python, se puede cambiar temporalmente a:
+
+```javascript
+const USE_N8N_WEBHOOK = false;
+```
+
+Los pedidos enviados por la URL normal `/webhook/electropatios-order` se ven en la seccion **Executions** de n8n. Si quieres ver las cajitas iluminandose en el canvas, se usa `Listen for test event`.
 
 ## Resultado probado
 

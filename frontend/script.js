@@ -11,9 +11,9 @@ const closeCart = document.querySelector("#close-cart");
 const resultCard = document.querySelector("#result-card");
 
 // Aqui decido por donde se envia el pedido.
-// En local lo dejo directo a Python para que la pagina siempre funcione.
-// Cuando estemos probando n8n, cambio USE_N8N_WEBHOOK a true.
-const USE_N8N_WEBHOOK = false;
+// Ahora los pedidos pasan primero por n8n para practicar automatizaciones.
+// Si n8n esta apagado, se puede volver a false para mandar directo a Python.
+const USE_N8N_WEBHOOK = true;
 const API_URL = "http://localhost:5000/api/quotes";
 const N8N_WEBHOOK_URL = "http://127.0.0.1:5678/webhook/electropatios-order";
 const ORDER_URL = USE_N8N_WEBHOOK ? N8N_WEBHOOK_URL : API_URL;
