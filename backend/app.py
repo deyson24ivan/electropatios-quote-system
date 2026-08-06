@@ -7,7 +7,7 @@ from typing import Any
 
 from flask import Flask, jsonify, request
 
-from quote_logic import PRODUCT_CATEGORIES, build_quote_record
+from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
 
 
 # Rutas principales del proyecto. Todo lo que se guarda localmente queda en backend/data.
@@ -166,7 +166,14 @@ def handle_quote_request():
     quote, errors = build_quote_record(payload)
 
     if errors:
-        return jsonify({"ok": False, "errors": errors, "quote": quote}), 400
+        return jsonify(
+            {
+                "ok": False,
+                "errors": errors,
+                "messages": [ERROR_MESSAGES.get(error, error) for error in errors],
+                "quote": quote,
+            }
+        ), 400
 
     result = save_quote(quote)
     return jsonify({"ok": True, **result}), 200 if result["duplicate"] else 201
@@ -206,4 +213,3 @@ def list_quotes():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
     app.run(host="0.0.0.0", port=port, debug=os.getenv("FLASK_ENV") == "development")
-

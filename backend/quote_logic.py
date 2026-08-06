@@ -53,6 +53,16 @@ PRODUCT_CATEGORIES = {
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+# Mensajes amigables para mostrar en la pagina cuando algo falta.
+ERROR_MESSAGES = {
+    "full_name_required": "Escribe tu nombre completo.",
+    "valid_email_required": "Escribe un email valido.",
+    "valid_phone_required": "Escribe un telefono valido.",
+    "product_category_required": "Selecciona una categoria de producto.",
+    "quantity_required_for_quotes": "Escribe la cantidad que necesitas cotizar.",
+    "consent_required": "Acepta ser contactado para poder responder la solicitud.",
+}
+
 
 # Limpia textos que llegan del formulario para guardar datos mas ordenados.
 def clean_text(value: Any) -> str:
@@ -125,17 +135,17 @@ def validate_quote(quote: dict[str, Any]) -> list[str]:
     errors: list[str] = []
 
     if not quote.get("full_name"):
-        errors.append("full_name is required")
+        errors.append("full_name_required")
     if not EMAIL_PATTERN.match(quote.get("email", "")):
-        errors.append("valid email is required")
+        errors.append("valid_email_required")
     if len(quote.get("phone", "")) < 7:
-        errors.append("valid phone is required")
+        errors.append("valid_phone_required")
     if not quote.get("product_category"):
-        errors.append("product_category is required")
+        errors.append("product_category_required")
     if quote.get("request_type") == "quote" and quote.get("quantity", 0) <= 0:
-        errors.append("quantity is required for quotes")
+        errors.append("quantity_required_for_quotes")
     if not quote.get("consent"):
-        errors.append("consent is required")
+        errors.append("consent_required")
 
     return errors
 

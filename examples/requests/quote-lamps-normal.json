@@ -1,0 +1,18 @@
+{
+  "full_name": "Carlos Ramirez",
+  "email": "carlos.lamparas@example.com",
+  "phone": "+573005556677",
+  "customer_type": "persona",
+  "company_name": "",
+  "request_type": "quote",
+  "product_category": "lamparas",
+  "quantity": "4",
+  "unit": "unidad",
+  "budget": "",
+  "urgency": "this_week",
+  "delivery_city": "Cucuta",
+  "notes": "Necesito 4 lamparas LED para comedor",
+  "source": "manual_test",
+  "consent": true
+}
+

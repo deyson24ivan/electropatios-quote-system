@@ -1,0 +1,18 @@
+{
+  "full_name": "Ana Perez",
+  "email": "ana.cable@example.com",
+  "phone": "+573001234567",
+  "customer_type": "tecnico_electricista",
+  "company_name": "",
+  "request_type": "quote",
+  "product_category": "cable",
+  "quantity": "120",
+  "unit": "metro",
+  "budget": "2500000",
+  "urgency": "hoy",
+  "delivery_city": "Los Patios",
+  "notes": "Cable #12 para entregar hoy",
+  "source": "manual_test",
+  "consent": true
+}
+

@@ -1,0 +1,15 @@
+{
+  "full_name": "",
+  "email": "correo-malo",
+  "phone": "12",
+  "customer_type": "persona",
+  "request_type": "quote",
+  "product_category": "",
+  "quantity": "0",
+  "unit": "unidad",
+  "urgency": "this_week",
+  "notes": "",
+  "source": "manual_test",
+  "consent": false
+}
+

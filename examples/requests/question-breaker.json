@@ -1,0 +1,18 @@
+{
+  "full_name": "Maria Torres",
+  "email": "maria.breaker@example.com",
+  "phone": "+573007778899",
+  "customer_type": "persona",
+  "company_name": "",
+  "request_type": "question",
+  "product_category": "proteccion",
+  "quantity": "1",
+  "unit": "unidad",
+  "budget": "",
+  "urgency": "researching",
+  "delivery_city": "Villa del Rosario",
+  "notes": "Quiero saber que breaker necesito para una ducha electrica",
+  "source": "manual_test",
+  "consent": true
+}
+

@@ -41,10 +41,10 @@ class QuoteLogicTest(unittest.TestCase):
             }
         )
 
-        self.assertIn("valid email is required", errors)
-        self.assertIn("valid phone is required", errors)
-        self.assertIn("product_category is required", errors)
-        self.assertIn("quantity is required for quotes", errors)
+        self.assertIn("valid_email_required", errors)
+        self.assertIn("valid_phone_required", errors)
+        self.assertIn("product_category_required", errors)
+        self.assertIn("quantity_required_for_quotes", errors)
         self.assertNotIn("id", quote)
 
     def test_business_customer_is_medium_priority(self):

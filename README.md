@@ -18,7 +18,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 ## Estructura
 
 ```text
-ai-lead-automation-platform/
+electropatios-quote-system/
 |-- backend/
 |   |-- app.py
 |   |-- quote_logic.py
@@ -26,8 +26,11 @@ ai-lead-automation-platform/
 |       `-- test_quote_logic.py
 |-- database/
 |   `-- schema.sql
+|-- examples/
+|   `-- requests/
 |-- docs/
 |   |-- architecture.md
+|   |-- api-guide.md
 |   |-- learning-roadmap.md
 |   `-- workflows/
 |       `-- quote-workflow.md
@@ -76,6 +79,12 @@ Tambien puedes consultar el catalogo base:
 http://localhost:5000/api/catalog
 ```
 
+Para entender la API paso a paso, revisa:
+
+```text
+docs/api-guide.md
+```
+
 ## Primer flujo objetivo
 
 ```mermaid
@@ -94,4 +103,3 @@ flowchart LR
 ## Frase de portafolio
 
 Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, registra la informacion y deja la base lista para integrarse con n8n, CRM, Google Sheets, email e IA.
-

@@ -97,7 +97,7 @@ form.addEventListener("submit", async (event) => {
 
     const body = await response.json();
     if (!response.ok) {
-      renderError("Falta informacion para preparar la cotizacion.", body.errors || []);
+      renderError("Falta informacion para preparar la cotizacion.", body.messages || body.errors || []);
       return;
     }
 
@@ -110,4 +110,3 @@ form.addEventListener("submit", async (event) => {
     button.textContent = "Solicitar cotizacion";
   }
 });
-
