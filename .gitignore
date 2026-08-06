@@ -6,6 +6,8 @@ __pycache__/
 venv/
 .tools/
 node_modules/
+.npm-cache/
+.n8n-local/
 backend/data/*.jsonl
 backend/data/*.log
 docs/screenshots/*

@@ -1,0 +1,187 @@
+{
+  "id": "electropatios-order-intake",
+  "name": "Electropatios Order Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "electropatios-order",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-electropatios-order",
+      "name": "Webhook Electropatios Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "electropatios-order-webhook",
+      "position": [260, 300],
+      "notesInFlow": true,
+      "notes": "Esta caja recibe el pedido que viene de la pagina de Electropatios. Es la puerta de entrada del workflow."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reviso lo minimo que necesita un asesor para atender el pedido.\n// n8n pone el JSON del webhook dentro de body, por eso primero lo saco de ahi.\nlet order = $json.body ?? $json;\n\nif (typeof order === 'string') {\n  try {\n    order = JSON.parse(order);\n  } catch (error) {\n    order = {};\n  }\n}\n\nconst required = ['full_name', 'email', 'phone', 'consent'];\nconst missing = required.filter((field) => !order[field]);\nconst hasItems = Array.isArray(order.items) && order.items.length > 0;\n\nif (!hasItems) {\n  missing.push('items');\n}\n\nreturn [{\n  json: {\n    ...order,\n    is_valid: missing.length === 0,\n    validation_status: missing.length === 0 ? 'valid' : 'invalid',\n    missing_fields: missing,\n    received_at: new Date().toISOString(),\n  }\n}];"
+      },
+      "id": "validate-order",
+      "name": "Validate Order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300],
+      "notesInFlow": true,
+      "notes": "Aqui valido nombre, correo, telefono, consentimiento y productos antes de seguir."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "order-is-valid",
+              "leftValue": "={{ $json.validation_status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-valid-order",
+      "name": "Is Valid Order?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [760, 300],
+      "notesInFlow": true,
+      "notes": "Esta decision separa pedidos completos de pedidos incompletos."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/quotes",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "send-to-api",
+      "name": "Send To Quote API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1020, 220],
+      "notesInFlow": true,
+      "notes": "Si el pedido esta bien, n8n lo envia a mi API de Python para guardarlo y clasificarlo."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "quote-is-high-priority",
+              "leftValue": "={{ $json.quote.priority }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-high-priority",
+      "name": "Is High Priority?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1260, 220],
+      "notesInFlow": true,
+      "notes": "Aqui reviso si la API marco el pedido como prioridad alta."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "advisor_message",
+              "value": "={{ 'Pedido prioritario de ' + $json.quote.full_name + ': ' + $json.quote.quantity + ' producto(s). Revisar precio, disponibilidad y entrega.' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-priority-message",
+      "name": "Prepare Priority Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1500, 140],
+      "notesInFlow": true,
+      "notes": "Esta caja deja listo el mensaje que luego se puede mandar por WhatsApp, email o CRM."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'Invalid order', missing_fields: $json.missing_fields, messages: ($json.missing_fields || []).map((field) => 'Falta revisar: ' + field) }) }}"
+      },
+      "id": "invalid-response",
+      "name": "Invalid Order Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1020, 420],
+      "notesInFlow": true,
+      "notes": "Si faltan datos, n8n responde con una lista clara de lo que se debe completar."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, priority: $json.quote.priority, status: $json.quote.status, quote_id: $json.quote.id, quote: $json.quote }) }}"
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1740, 220],
+      "notesInFlow": true,
+      "notes": "Esta es la respuesta que vuelve a la pagina o a la prueba manual cuando todo salio bien."
+    }
+  ],
+  "connections": {
+    "Webhook Electropatios Order": {
+      "main": [[{ "node": "Validate Order", "type": "main", "index": 0 }]]
+    },
+    "Validate Order": {
+      "main": [[{ "node": "Is Valid Order?", "type": "main", "index": 0 }]]
+    },
+    "Is Valid Order?": {
+      "main": [
+        [{ "node": "Send To Quote API", "type": "main", "index": 0 }],
+        [{ "node": "Invalid Order Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send To Quote API": {
+      "main": [[{ "node": "Is High Priority?", "type": "main", "index": 0 }]]
+    },
+    "Is High Priority?": {
+      "main": [
+        [{ "node": "Prepare Priority Message", "type": "main", "index": 0 }],
+        [{ "node": "Success Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Priority Message": {
+      "main": [[{ "node": "Success Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

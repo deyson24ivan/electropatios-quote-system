@@ -32,6 +32,7 @@ electropatios-quote-system/
 |-- docs/
 |   |-- architecture.md
 |   |-- api-guide.md
+|   |-- n8n-guide.md
 |   |-- learning-roadmap.md
 |   `-- workflows/
 |       `-- quote-workflow.md
@@ -41,7 +42,7 @@ electropatios-quote-system/
 |   `-- script.js
 |-- n8n/
 |   |-- README.md
-|   `-- quote-workflow.sample.json
+|   `-- electropatios-order-workflow.json
 |-- .env.example
 `-- requirements.txt
 ```
@@ -86,19 +87,32 @@ Para entender la API paso a paso, revisa:
 docs/api-guide.md
 ```
 
+Para entender el primer workflow de n8n, revisa:
+
+```text
+docs/n8n-guide.md
+```
+
+Cuando n8n este corriendo, su editor local queda en:
+
+```text
+http://localhost:5678
+```
+
 ## Primer flujo objetivo
 
 ```mermaid
 flowchart LR
-  A["Pagina Electropatios"] --> B["Formulario de cotizacion"]
-  B --> C["API /api/quotes"]
-  C --> D["Validacion"]
-  D --> E["Deteccion de solicitud repetida"]
-  E --> F["MySQL o respaldo local"]
-  F --> G["Prioridad comercial"]
-  G --> H["CRM pipeline"]
-  G --> I["Google Sheets"]
-  G --> J["Notificacion al asesor"]
+  A["Pagina Electropatios"] --> B["Carrito y formulario"]
+  B --> C["Webhook n8n"]
+  C --> D["Validacion en n8n"]
+  D --> E["API /api/quotes"]
+  E --> F["Deteccion de solicitud repetida"]
+  F --> G["MySQL o respaldo local"]
+  G --> H["Prioridad comercial"]
+  H --> I["CRM pipeline"]
+  H --> J["Google Sheets"]
+  H --> K["Notificacion al asesor"]
 ```
 
 ## Frase de portafolio

@@ -1,46 +1,38 @@
 # Ruta de aprendizaje
 
-El objetivo no es aprender herramientas aisladas, sino construir una historia real de automatizacion que puedas explicar en entrevista.
+El objetivo no es aprender veinte herramientas al tiempo. La idea es construir un solo proyecto realista de Electropatios y que cada fase deje una evidencia clara para portafolio.
 
-## Fase 1 - Git y estructura
+## Estado actual
 
-Evidencia: repositorio ordenado, README claro, commits pequenos y documentacion inicial.
+| Fase | Estado | Evidencia |
+| --- | --- | --- |
+| Fase 1 - Git/GitHub | Lista | Repositorio privado, commits, README y `.gitignore`. |
+| Fase 2 - Webhook + API | Lista | API Flask con `GET /health`, `GET /api/catalog` y `POST /api/quotes`. |
+| Fase 3 - n8n | Lista | Workflow activo para recibir pedidos, validar datos y llamar la API. |
+| Fase 4 - Lead Automation | Pendiente | Formulario -> n8n -> MySQL -> Sheets -> notificacion. |
+| Fase 5 - CRM / GoHighLevel | Pendiente | Contactos, pipelines, tags, triggers y workflows. |
+| Fase 6 - IA | Pendiente | Preguntas sobre productos, prompts, guardrails y paso a asesor humano. |
+| Fase 7 - Voice AI | Pendiente | Agente telefonico para tomar o consultar pedidos. |
+| Fase 8 - WordPress + hosting | Pendiente | Landing, formulario, dominio, DNS y SSL. |
+| Fase 9 - Tracking | Pendiente | Analytics, Tag Manager, Pixel y UTM. |
+| Fase 10 - Email infrastructure | Pendiente | SPF, DKIM, DMARC y entregabilidad. |
+| Fase 11 - Deploy | Pendiente | API y pagina publicadas online. |
+| Fase 12 - Portfolio | Pendiente | README final, diagramas, capturas y demo. |
+
+## Fase 1 - Git/GitHub
+
+Aprendi a tener el proyecto ordenado, hacer commits, conectar con GitHub y subir una version que se pueda mostrar.
 
 Herramientas: Git, GitHub, Markdown.
 
-## Fase 2 - Pagina y API
+## Fase 2 - Webhook + API
 
-Evidencia: formulario que envia JSON a un endpoint y recibe respuesta.
+Aprendi HTTP y JSON usando una API real: la pagina arma un pedido, lo manda por `POST` y la API responde si todo esta bien.
 
 Herramientas: HTML, CSS, JavaScript, Python, Flask, HTTP, JSON.
 
-## Fase 3 - MySQL
+## Fase 3 - n8n
 
-Evidencia: cotizaciones persistidas en tablas, indices, eventos y errores.
+Aprendi a usar n8n como orquestador. n8n recibe el pedido por webhook, valida campos, llama la API y deja el camino listo para notificaciones o Google Sheets.
 
-Herramientas: MySQL, SQL, variables de entorno.
-
-## Fase 4 - n8n
-
-Evidencia: workflow con webhook, validacion, condiciones, reintentos y rutas de error.
-
-Herramientas: n8n, webhooks, nodos HTTP, IF, Sheets, email.
-
-## Fase 5 - CRM
-
-Evidencia: pipeline con estados, tags y oportunidades.
-
-Herramientas: conceptos CRM, GoHighLevel o CRM equivalente.
-
-## Fase 6 - IA
-
-Evidencia: preguntas sobre productos, respuestas con guardrails y handoff humano.
-
-Herramientas: prompting, agentes IA, evaluacion de respuestas.
-
-## Fase 7 - Produccion
-
-Evidencia: app publicada con dominio, SSL, tracking y monitoreo basico.
-
-Herramientas: hosting, DNS, SSL, Analytics, Tag Manager, Meta Pixel, SPF, DKIM, DMARC.
-
+Herramientas: n8n, webhooks, nodo HTTP, nodo IF, manejo basico de errores.

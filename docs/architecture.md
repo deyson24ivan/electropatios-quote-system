@@ -1,25 +1,28 @@
 # Arquitectura
 
-Este proyecto esta disenado como una plataforma de cotizaciones para Electropatios. La primera version funciona con una pagina web y una API local; las siguientes fases conectan n8n, MySQL, Google Sheets, CRM, email e IA.
+Este proyecto esta disenado como una plataforma de cotizaciones para Electropatios. La primera version funciona con una pagina web y una API local. En la fase de n8n, el pedido tambien puede entrar por un webhook para despues conectarse con Google Sheets, CRM, email e IA.
 
 ## Flujo principal
 
 ```mermaid
 flowchart TD
   A["Cliente entra a la pagina"] --> B["Solicita cotizacion o asesoria"]
-  B --> C["POST /api/quotes"]
-  C --> D{"Datos validos?"}
-  D -- "No" --> E["Respuesta 400 con errores"]
-  D -- "Si" --> F{"Solicitud repetida?"}
-  F -- "Si" --> G["Retorna solicitud existente"]
-  F -- "No" --> H["Guarda en MySQL"]
-  H --> I{"MySQL disponible?"}
-  I -- "No" --> J["Respaldo local JSONL"]
-  I -- "Si" --> K["Evento quote_request_created"]
-  J --> L["Prioridad high/medium/low"]
-  K --> L
-  L --> M["n8n continua el flujo"]
-  M --> N["CRM / Sheets / Email / Notificacion"]
+  B --> C{"Ruta del pedido"}
+  C -- "Modo local" --> D["POST /api/quotes"]
+  C -- "Modo n8n" --> E["Webhook electropatios-order"]
+  E --> F["Validacion en n8n"]
+  F --> D
+  D --> G{"Datos validos?"}
+  G -- "No" --> H["Respuesta 400 con errores"]
+  G -- "Si" --> I{"Solicitud repetida?"}
+  I -- "Si" --> J["Retorna solicitud existente"]
+  I -- "No" --> K["Guarda en MySQL"]
+  K --> L{"MySQL disponible?"}
+  L -- "No" --> M["Respaldo local JSONL"]
+  L -- "Si" --> N["Evento quote_request_created"]
+  M --> O["Prioridad high/medium/low"]
+  N --> O
+  O --> P["CRM / Sheets / Email / Notificacion"]
 ```
 
 ## Contrato de datos
@@ -73,4 +76,3 @@ Si el cliente pregunta algo que no esta documentado, la respuesta esperada es:
 > No tengo esa informacion confirmada. Puedo registrar la pregunta para que un asesor de Electropatios la revise.
 
 Esta regla es importante para explicar en entrevista como se reducen alucinaciones.
-

@@ -10,9 +10,13 @@ const cartToggle = document.querySelector("#cart-toggle");
 const closeCart = document.querySelector("#close-cart");
 const resultCard = document.querySelector("#result-card");
 
-// La pagina envia el pedido a esta API local.
-// Cuando el proyecto este online, esta URL se cambia por el dominio real.
+// Aqui decido por donde se envia el pedido.
+// En local lo dejo directo a Python para que la pagina siempre funcione.
+// Cuando estemos probando n8n, cambio USE_N8N_WEBHOOK a true.
+const USE_N8N_WEBHOOK = false;
 const API_URL = "http://localhost:5000/api/quotes";
+const N8N_WEBHOOK_URL = "http://127.0.0.1:5678/webhook/electropatios-order";
+const ORDER_URL = USE_N8N_WEBHOOK ? N8N_WEBHOOK_URL : API_URL;
 
 // Catalogo inicial escrito en JavaScript para practicar.
 // Despues puede venir de MySQL, Google Sheets o un inventario real.
@@ -204,7 +208,7 @@ function renderCart() {
             <div class="cart-row">
               <div>
                 <strong>${item.name}</strong>
-                <span>${item.sku} · ${item.unit}</span>
+                <span>${item.sku} - ${item.unit}</span>
               </div>
               <div class="qty-controls">
                 <button type="button" data-dec="${item.sku}">-</button>
@@ -334,7 +338,7 @@ form.addEventListener("submit", async (event) => {
   button.textContent = "Enviando...";
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(ORDER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -344,7 +348,7 @@ form.addEventListener("submit", async (event) => {
 
     const body = await response.json();
     if (!response.ok) {
-      renderError("Falta informacion para preparar el pedido.", body.messages || body.errors || []);
+      renderError("Falta informacion para preparar el pedido.", body.messages || body.errors || body.missing_fields || []);
       return;
     }
 
@@ -364,4 +368,3 @@ form.addEventListener("submit", async (event) => {
 renderCategoryTabs();
 renderProducts();
 renderCart();
-
