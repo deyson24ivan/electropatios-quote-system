@@ -13,7 +13,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Clasificacion interna por prioridad: `high`, `medium` o `low`.
 - Conversion de cotizaciones en leads comerciales.
 - Fila preparada para Google Sheets.
-- Datos preparados para la siguiente fase con GoHighLevel.
+- Modo seguro de GoHighLevel para preparar contactos y oportunidades sin enviar datos reales.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -26,9 +26,11 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 electropatios-quote-system/
 |-- backend/
 |   |-- app.py
+|   |-- ghl_logic.py
 |   |-- lead_logic.py
 |   |-- quote_logic.py
 |   `-- tests/
+|       |-- test_ghl_logic.py
 |       |-- test_lead_logic.py
 |       `-- test_quote_logic.py
 |-- database/
@@ -38,6 +40,7 @@ electropatios-quote-system/
 |-- docs/
 |   |-- architecture.md
 |   |-- api-guide.md
+|   |-- gohighlevel-safe-mode-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
 |   |-- learning-roadmap.md
@@ -106,6 +109,12 @@ Para entender como la cotizacion se convierte en lead, revisa:
 docs/lead-automation-guide.md
 ```
 
+Para entender la preparacion segura de GoHighLevel, revisa:
+
+```text
+docs/gohighlevel-safe-mode-guide.md
+```
+
 Cuando n8n este corriendo, su editor local queda en:
 
 ```text
@@ -125,10 +134,10 @@ flowchart LR
   G --> H["Prioridad comercial"]
   H --> I["API /api/leads"]
   I --> J["Fila para Google Sheets"]
-  I --> K["Payload para GoHighLevel"]
+  I --> K["Modo seguro GoHighLevel"]
   I --> L["Notificacion al asesor"]
 ```
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, registra la informacion, crea un lead comercial y deja la base lista para integrarse con Google Sheets, GoHighLevel, email e IA.
+Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica la prioridad, evita solicitudes repetidas, crea un lead comercial y prepara una sincronizacion segura con GoHighLevel antes de conectar credenciales reales.

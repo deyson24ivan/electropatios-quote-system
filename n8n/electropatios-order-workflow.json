@@ -106,6 +106,22 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/crm/sync",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "sync-crm-safe-mode",
+      "name": "Sync CRM Safe Mode",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1740, 220],
+      "notesInFlow": true,
+      "notes": "Esta caja prepara contacto y oportunidad para GoHighLevel, pero no envia nada real mientras estemos en modo seguro."
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -131,7 +147,7 @@
       "name": "Is High Priority?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1740, 220],
+      "position": [1980, 220],
       "notesInFlow": true,
       "notes": "Aqui reviso si el lead comercial quedo como prioridad alta."
     },
@@ -143,7 +159,7 @@
       "name": "Prepare Advisor Notification",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1980, 140],
+      "position": [2220, 140],
       "notesInFlow": true,
       "notes": "Esta caja arma el mensaje que mas adelante puede ir por WhatsApp, email o GoHighLevel."
     },
@@ -159,7 +175,7 @@
       "name": "Save Advisor Notification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [2220, 140],
+      "position": [2460, 140],
       "notesInFlow": true,
       "notes": "Guarda la notificacion preparada para el asesor. Luego este nodo puede cambiarse por email, WhatsApp o tarea en GoHighLevel."
     },
@@ -179,13 +195,13 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, quote_duplicate: $json.quote_duplicate, lead_duplicate: $json.lead_duplicate, priority: $json.lead.priority, status: $json.lead.pipeline_stage, quote_id: $json.quote.id, lead_id: $json.lead.id, quote: $json.quote, lead: $json.lead, sheet_row: $json.sheet_row, notification: $json.notification }) }}"
+        "responseBody": "={{ JSON.stringify({ ok: true, duplicate: $json.duplicate, quote_duplicate: $json.quote_duplicate, lead_duplicate: $json.lead_duplicate, priority: $json.lead.priority, status: $json.lead.pipeline_stage, quote_id: $json.quote.id, lead_id: $json.lead.id, quote: $json.quote, lead: $json.lead, sheet_row: $json.sheet_row, crm_sync: $json.crm_sync, notification: $json.notification }) }}"
       },
       "id": "success-response",
       "name": "Success Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [2460, 220],
+      "position": [2700, 220],
       "notesInFlow": true,
       "notes": "Esta es la respuesta que vuelve a la pagina o a la prueba manual cuando todo salio bien."
     }
@@ -210,6 +226,9 @@
       "main": [[{ "node": "Prepare Sheets Row", "type": "main", "index": 0 }]]
     },
     "Prepare Sheets Row": {
+      "main": [[{ "node": "Sync CRM Safe Mode", "type": "main", "index": 0 }]]
+    },
+    "Sync CRM Safe Mode": {
       "main": [[{ "node": "Is High Priority?", "type": "main", "index": 0 }]]
     },
     "Is High Priority?": {

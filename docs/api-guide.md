@@ -30,6 +30,8 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | GET | `/api/leads` | Lista leads guardados localmente. |
 | POST | `/api/notifications` | Guarda una notificacion preparada para el asesor. |
 | GET | `/api/notifications` | Lista notificaciones guardadas localmente. |
+| POST | `/api/crm/sync` | Prepara sincronizacion segura con GoHighLevel. |
+| GET | `/api/crm/syncs` | Lista intentos CRM guardados localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -145,6 +147,36 @@ Ese endpoint responde con datos listos para seguimiento:
 ```
 
 En la Fase 5 usaremos esa parte de `ghl_payloads` para hablar con GoHighLevel.
+
+## Respuesta CRM en modo seguro
+
+n8n llama a:
+
+```text
+POST http://localhost:5000/api/crm/sync
+```
+
+La API responde algo como:
+
+```json
+{
+  "ok": true,
+  "crm_sync": {
+    "provider": "gohighlevel",
+    "mode": "safe_mode",
+    "status": "dry_run_prepared",
+    "will_send_to_crm": false,
+    "missing_config": [
+      "GHL_PRIVATE_TOKEN",
+      "GHL_LOCATION_ID",
+      "GHL_PIPELINE_ID",
+      "GHL_STAGE_HIGH"
+    ]
+  }
+}
+```
+
+Eso quiere decir: el sistema ya sabe que mandaria, pero todavia no envio nada real.
 
 ## Respuesta cuando faltan datos
 

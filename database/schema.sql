@@ -107,6 +107,25 @@ CREATE TABLE IF NOT EXISTS advisor_notifications (
   INDEX idx_notifications_status (status)
 );
 
+-- Intentos de CRM: en modo seguro guardamos que se mandaria a GoHighLevel.
+CREATE TABLE IF NOT EXISTS crm_sync_attempts (
+  id CHAR(36) PRIMARY KEY,
+  lead_id CHAR(36) NULL,
+  quote_id CHAR(36) NULL,
+  provider VARCHAR(80) NOT NULL DEFAULT 'gohighlevel',
+  mode VARCHAR(80) NOT NULL DEFAULT 'safe_mode',
+  status VARCHAR(80) NOT NULL DEFAULT 'dry_run_prepared',
+  will_send_to_crm BOOLEAN NOT NULL DEFAULT FALSE,
+  contact_request_json JSON NULL,
+  opportunity_request_json JSON NULL,
+  missing_config_json JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_crm_syncs_lead_id (lead_id),
+  INDEX idx_crm_syncs_quote_id (quote_id),
+  INDEX idx_crm_syncs_status (status),
+  INDEX idx_crm_syncs_created_at (created_at)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

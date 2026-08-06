@@ -24,7 +24,7 @@ flowchart TD
   N --> O
   O --> P["POST /api/leads"]
   P --> Q["Fila lista para Sheets"]
-  P --> R["Payload listo para GoHighLevel"]
+  P --> R["GoHighLevel modo seguro"]
   P --> S["Notificacion interna"]
 ```
 
@@ -59,7 +59,7 @@ flowchart TD
 - Clasificar como `low` si es una pregunta inicial que requiere asesoria o seguimiento posterior.
 - Si MySQL falla, guardar respaldo local y registrar el error.
 - Convertir la cotizacion en lead comercial para seguimiento.
-- Preparar datos para Sheets y GoHighLevel sin conectarlos todavia.
+- Preparar datos para Sheets y GoHighLevel sin enviar datos reales todavia.
 
 ## Catalogo base
 

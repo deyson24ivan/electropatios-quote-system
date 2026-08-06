@@ -33,6 +33,15 @@
 8. Si el lead es urgente, n8n guarda una notificacion interna para el asesor.
 9. La pagina recibe una respuesta con `quote_id`, `lead_id`, prioridad y estado.
 
+## Version 4 con CRM en modo seguro
+
+1. n8n recibe el lead creado por la API.
+2. n8n llama a `POST /api/crm/sync`.
+3. La API prepara el contacto de GoHighLevel usando estrategia `upsert`.
+4. La API prepara la oportunidad con pipeline, stage, estado `open` y valor estimado.
+5. La API guarda el intento CRM en modo seguro.
+6. El flujo responde con `crm_sync.mode = safe_mode` y `will_send_to_crm = false`.
+
 ## Casos de error que quiero practicar
 
 - Email invalido.
@@ -51,6 +60,6 @@
 - Agregar precios reales o rangos de precios por producto.
 - Sincronizar catalogo e inventario desde una hoja de calculo.
 - Conectar el nodo real de Google Sheets.
-- Conectar GoHighLevel con contactos, oportunidades, tags y tareas.
+- Conectar GoHighLevel real cuando tengamos credenciales y IDs confirmados.
 - Crear pipeline CRM con estados: nueva, revisada, cotizada, ganada y perdida.
 - Agregar agente IA que responda preguntas sin inventar precios ni disponibilidad.

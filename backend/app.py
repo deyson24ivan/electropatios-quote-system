@@ -9,9 +9,11 @@ from typing import Any
 from flask import Flask, jsonify, request
 
 try:
+    from .ghl_logic import build_crm_sync_record
     from .lead_logic import build_lead_record, build_notification
     from .quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
 except ImportError:
+    from ghl_logic import build_crm_sync_record
     from lead_logic import build_lead_record, build_notification
     from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
 
@@ -22,6 +24,7 @@ DATA_DIR = BASE_DIR / "data"
 QUOTES_FILE = DATA_DIR / "quotes.jsonl"
 LEADS_FILE = DATA_DIR / "leads.jsonl"
 NOTIFICATIONS_FILE = DATA_DIR / "notifications.jsonl"
+CRM_SYNCS_FILE = DATA_DIR / "crm_syncs.jsonl"
 ERRORS_FILE = DATA_DIR / "automation_errors.jsonl"
 
 app = Flask(__name__)
@@ -94,6 +97,11 @@ def read_local_leads() -> list[dict[str, Any]]:
 # Lee las notificaciones guardadas localmente para revisar que el flujo aviso algo.
 def read_local_notifications() -> list[dict[str, Any]]:
     return read_jsonl(NOTIFICATIONS_FILE)
+
+
+# Lee los intentos CRM preparados en modo seguro.
+def read_local_crm_syncs() -> list[dict[str, Any]]:
+    return read_jsonl(CRM_SYNCS_FILE)
 
 
 # Busca si ya existe una solicitud exactamente igual en el respaldo local.
@@ -299,6 +307,39 @@ def save_mysql_notification(notification: dict[str, Any]) -> None:
         connection.commit()
 
 
+# Guarda el intento de sincronizacion CRM. En esta fase todavia no manda datos reales.
+def save_mysql_crm_sync(sync: dict[str, Any]) -> None:
+    sync_for_mysql = {
+        **sync,
+        "will_send_to_crm": bool(sync.get("will_send_to_crm")),
+        "contact_request_json": json.dumps(sync.get("requests", {}).get("contact_upsert", {}), ensure_ascii=True),
+        "opportunity_request_json": json.dumps(
+            sync.get("requests", {}).get("opportunity_create", {}),
+            ensure_ascii=True,
+        ),
+        "missing_config_json": json.dumps(sync.get("missing_config", []), ensure_ascii=True),
+        "created_at": mysql_datetime(sync.get("created_at")),
+    }
+    with mysql_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO crm_sync_attempts (
+                id, lead_id, quote_id, provider, mode, status, will_send_to_crm,
+                contact_request_json, opportunity_request_json, missing_config_json,
+                created_at
+            )
+            VALUES (
+                %(id)s, %(lead_id)s, %(quote_id)s, %(provider)s, %(mode)s,
+                %(status)s, %(will_send_to_crm)s, %(contact_request_json)s,
+                %(opportunity_request_json)s, %(missing_config_json)s, %(created_at)s
+            )
+            """,
+            sync_for_mysql,
+        )
+        connection.commit()
+
+
 # Decide donde guardar: primero intenta MySQL; si falla, usa archivo local.
 def save_quote(quote: dict[str, Any]) -> dict[str, Any]:
     if mysql_configured():
@@ -375,6 +416,26 @@ def save_notification(notification: dict[str, Any]) -> str:
     return "local_jsonl"
 
 
+# Guarda el resultado del modo seguro de CRM para poder revisarlo despues.
+def save_crm_sync(sync: dict[str, Any]) -> str:
+    if mysql_configured():
+        try:
+            save_mysql_crm_sync(sync)
+            return "mysql"
+        except Exception as exc:
+            append_jsonl(
+                ERRORS_FILE,
+                {
+                    "error": str(exc),
+                    "fallback": "local_jsonl",
+                    "crm_sync": sync,
+                },
+            )
+
+    append_jsonl(CRM_SYNCS_FILE, sync)
+    return "local_jsonl"
+
+
 # Flujo completo del formulario: recibe, valida, guarda y responde.
 def handle_quote_request():
     payload = request.get_json(silent=True) or {}
@@ -422,6 +483,18 @@ def handle_lead_request():
             "advisor_message": saved_lead.get("advisor_message", ""),
         }
     ), 200 if lead_duplicate else 201
+
+
+# Recibe un lead y prepara lo que se mandaria a GoHighLevel en modo seguro.
+def handle_crm_sync_request():
+    payload = request.get_json(silent=True) or {}
+    sync, errors = build_crm_sync_record(payload)
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors, "crm_sync": sync}), 400
+
+    storage = save_crm_sync(sync)
+    return jsonify({"ok": True, **payload, "crm_sync_storage": storage, "crm_sync": sync}), 201
 
 
 # Endpoint sencillo para revisar si la API esta viva.
@@ -494,6 +567,25 @@ def list_notifications():
         return jsonify({"ok": False, "error": "invalid admin token"}), 401
 
     return jsonify({"ok": True, "notifications": read_local_notifications()})
+
+
+@app.route("/api/crm/sync", methods=["OPTIONS"])
+def crm_sync_options():
+    return "", 204
+
+
+@app.route("/api/crm/sync", methods=["POST"])
+def create_crm_sync():
+    return handle_crm_sync_request()
+
+
+@app.route("/api/crm/syncs", methods=["GET"])
+def list_crm_syncs():
+    expected_token = os.getenv("ADMIN_TOKEN")
+    if expected_token and request.args.get("token") != expected_token:
+        return jsonify({"ok": False, "error": "invalid admin token"}), 401
+
+    return jsonify({"ok": True, "crm_syncs": read_local_crm_syncs()})
 
 
 if __name__ == "__main__":
