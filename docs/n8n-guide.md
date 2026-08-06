@@ -58,19 +58,20 @@ n8n/electropatios-order-workflow.json
 
 ## Como correr n8n localmente
 
-En este equipo usamos Node.js. PowerShell bloquea `npm.ps1`, por eso usamos comandos `.cmd` o `node` directo.
+En este equipo usamos Node.js con `npx`. No hay Docker, servicio de Windows ni instalacion global de n8n.
 
-La primera vez se puede instalar n8n dentro de una cache local del proyecto:
+La instalacion activa probada es:
 
-```powershell
-npm.cmd install --cache .\.npm-cache --prefix .\.npm-cache\_npx\electropatios-n8n n8n@2.33.4 n8n-nodes-base@2.33.1 sqlite3@5.1.7
+```text
+n8n 2.33.5
+http://localhost:5678
+C:\Users\deyso\.n8n
 ```
 
-Despues se arranca con:
+Para arrancar n8n:
 
 ```powershell
-$env:N8N_USER_FOLDER = ".n8n-local"
-node .\.npm-cache\_npx\electropatios-n8n\node_modules\n8n\bin\n8n start
+npx.cmd --yes n8n@2.33.5 start
 ```
 
 El editor queda en:
@@ -82,12 +83,11 @@ http://localhost:5678
 ## Como importar y activar el workflow
 
 ```powershell
-$env:N8N_USER_FOLDER = ".n8n-local"
-node .\.npm-cache\_npx\electropatios-n8n\node_modules\n8n\bin\n8n import:workflow --input=n8n\electropatios-order-workflow.json
-node .\.npm-cache\_npx\electropatios-n8n\node_modules\n8n\bin\n8n update:workflow --id=electropatios-order-intake --active=true
+npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-order-workflow.json
+npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --active=true
 ```
 
-Si n8n ya estaba abierto, se reinicia para que registre el webhook activo.
+Si n8n ya estaba abierto, se reinicia para que registre el webhook activo. No uses `N8N_USER_FOLDER` para este proyecto; la carpeta normal es `C:\Users\deyso\.n8n`.
 
 ## Como probar el webhook activo
 
@@ -154,13 +154,19 @@ Los pedidos enviados por la URL normal `/webhook/electropatios-order` se ven en 
 
 ## Resultado probado
 
-El webhook activo respondio correctamente con un pedido de carrito:
+El webhook activo respondio correctamente con un pedido de carrito en la instalacion nueva de n8n:
 
 ```json
 {
   "ok": true,
   "priority": "high",
-  "status": "contactar_hoy"
+  "status": "contactar_hoy",
+  "ai_analysis": {
+    "mode": "safe_mode"
+  },
+  "crm_sync": {
+    "mode": "safe_mode"
+  }
 }
 ```
 

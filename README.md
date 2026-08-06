@@ -131,6 +131,12 @@ Cuando n8n este corriendo, su editor local queda en:
 http://localhost:5678
 ```
 
+La instalacion local actual de n8n usa `npx`, version `2.33.5`, con datos en:
+
+```text
+C:\Users\deyso\.n8n
+```
+
 ## Primer flujo objetivo
 
 ```mermaid

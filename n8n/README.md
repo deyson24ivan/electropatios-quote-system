@@ -2,10 +2,27 @@
 
 `electropatios-order-workflow.json` es un workflow inicial para importar y adaptar en n8n.
 
+Instalacion local actual:
+
+```text
+n8n 2.33.5
+Node.js con npx
+Datos en C:\Users\deyso\.n8n
+Sin Docker, sin servicio de Windows y sin instalacion global
+```
+
 Ruta activa probada en local:
 
 ```text
 POST http://127.0.0.1:5678/webhook/electropatios-order
+```
+
+Comandos principales:
+
+```powershell
+npx.cmd --yes n8n@2.33.5 start
+npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-order-workflow.json
+npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --active=true
 ```
 
 ## Objetivo del workflow
