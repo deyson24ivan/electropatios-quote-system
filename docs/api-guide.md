@@ -44,6 +44,15 @@ Ese `POST` significa: "quiero enviar informacion nueva".
   "urgency": "hoy",
   "delivery_city": "Los Patios",
   "notes": "Cable #12 para entregar hoy",
+  "items": [
+    {
+      "sku": "CAB-THHN-12",
+      "name": "Cable THHN #12",
+      "category": "cable",
+      "quantity": 120,
+      "unit": "metro"
+    }
+  ],
   "source": "manual_test",
   "consent": true
 }
@@ -58,6 +67,29 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 5. Revisa si la misma solicitud ya fue enviada.
 6. Guarda la solicitud.
 7. Responde con otro JSON.
+
+## Como funciona el carrito de la pagina
+
+La pagina tiene un catalogo en `frontend/script.js`. Cuando el cliente presiona
+`Agregar`, JavaScript guarda ese producto en un carrito temporal. Al enviar el
+pedido, el carrito viaja a la API dentro de la propiedad `items`.
+
+Ejemplo:
+
+```json
+"items": [
+  {
+    "sku": "CAB-THHN-12",
+    "name": "Cable THHN #12",
+    "category": "cable",
+    "quantity": 30,
+    "unit": "metro"
+  }
+]
+```
+
+Todavia no hay pago online. La idea realista para esta version es que el cliente
+arme un pedido y Electropatios confirme precio, disponibilidad y entrega.
 
 ## Respuesta cuando todo sale bien
 

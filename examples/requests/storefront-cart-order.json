@@ -1,0 +1,34 @@
+{
+  "full_name": "Pedido de obra",
+  "email": "obra.electrica@example.com",
+  "phone": "+573004445566",
+  "customer_type": "empresa",
+  "company_name": "Proyecto Los Patios",
+  "request_type": "quote",
+  "product_category": "varios",
+  "quantity": "34",
+  "unit": "item",
+  "budget": "",
+  "urgency": "next_week",
+  "delivery_city": "Los Patios",
+  "notes": "Confirmar disponibilidad para entrega parcial",
+  "items": [
+    {
+      "sku": "CAB-THHN-12",
+      "name": "Cable THHN #12",
+      "category": "cable",
+      "quantity": 30,
+      "unit": "metro"
+    },
+    {
+      "sku": "PRO-BRK-20A",
+      "name": "Breaker 20A",
+      "category": "proteccion",
+      "quantity": 4,
+      "unit": "unidad"
+    }
+  ],
+  "source": "manual_test",
+  "consent": true
+}
+

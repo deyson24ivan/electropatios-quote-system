@@ -7,6 +7,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 ## Que demuestra este proyecto
 
 - Pagina web con formulario real de cotizacion.
+- Catalogo con productos, categorias, buscador y pedido tipo carrito.
 - API REST en Python para recibir solicitudes comerciales.
 - Validacion de datos antes de guardar o automatizar.
 - Clasificacion interna por prioridad: `high`, `medium` o `low`.

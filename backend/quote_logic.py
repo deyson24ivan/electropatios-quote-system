@@ -10,6 +10,9 @@ from typing import Any
 # Aqui guardo las categorias principales que vende Electropatios.
 # Mas adelante esto puede salir de MySQL, Google Sheets o un inventario real.
 PRODUCT_CATEGORIES = {
+    "varios": [
+        "pedido con varios productos",
+    ],
     "lamparas": [
         "Lamparas LED",
         "paneles LED",
@@ -60,6 +63,7 @@ ERROR_MESSAGES = {
     "valid_phone_required": "Escribe un telefono valido.",
     "product_category_required": "Selecciona una categoria de producto.",
     "quantity_required_for_quotes": "Escribe la cantidad que necesitas cotizar.",
+    "items_required_for_quotes": "Agrega al menos un producto al pedido.",
     "consent_required": "Acepta ser contactado para poder responder la solicitud.",
 }
 
@@ -102,9 +106,46 @@ def normalize_phone(value: Any) -> str:
     return re.sub(r"\D", "", raw)
 
 
+# Limpia cada producto que llega desde el carrito de la pagina.
+def normalize_items(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    raw_items = payload.get("items")
+    if not isinstance(raw_items, list):
+        return []
+
+    items: list[dict[str, Any]] = []
+    for item in raw_items:
+        if not isinstance(item, dict):
+            continue
+
+        quantity = parse_positive_int(item.get("quantity"))
+        if quantity <= 0:
+            continue
+
+        category = slug_text(item.get("category"))
+        if category not in PRODUCT_CATEGORIES:
+            category = "otros"
+
+        items.append(
+            {
+                "sku": clean_text(item.get("sku")),
+                "name": clean_text(item.get("name")),
+                "category": category,
+                "quantity": quantity,
+                "unit": slug_text(item.get("unit") or "unidad"),
+            }
+        )
+
+    return items
+
+
 # Esta funcion arma una cotizacion limpia con los datos que llegan del formulario.
 def normalize_quote(payload: dict[str, Any]) -> dict[str, Any]:
+    items = normalize_items(payload)
     product_category = slug_text(payload.get("product_category"))
+    if items:
+        categories = {item["category"] for item in items}
+        product_category = items[0]["category"] if len(categories) == 1 else "varios"
+
     if product_category not in PRODUCT_CATEGORIES:
         product_category = "otros" if product_category else ""
 
@@ -119,13 +160,15 @@ def normalize_quote(payload: dict[str, Any]) -> dict[str, Any]:
         "company_name": clean_text(payload.get("company_name")),
         "request_type": request_type,
         "product_category": product_category,
-        "quantity": parse_positive_int(payload.get("quantity")),
+        "quantity": parse_positive_int(payload.get("quantity"))
+        or sum(item["quantity"] for item in items),
         "unit": slug_text(payload.get("unit") or "unidad"),
         "budget_cop": parse_budget(payload.get("budget_cop") or payload.get("budget")),
         "urgency": urgency,
         "delivery_city": clean_text(payload.get("delivery_city") or "Cucuta"),
         "source": clean_text(payload.get("source") or "electropatios_web"),
         "notes": clean_text(payload.get("notes") or payload.get("question")),
+        "items": items,
         "consent": bool(payload.get("consent")),
     }
 
@@ -144,6 +187,8 @@ def validate_quote(quote: dict[str, Any]) -> list[str]:
         errors.append("product_category_required")
     if quote.get("request_type") == "quote" and quote.get("quantity", 0) <= 0:
         errors.append("quantity_required_for_quotes")
+    if quote.get("request_type") == "quote" and not quote.get("items"):
+        errors.append("items_required_for_quotes")
     if not quote.get("consent"):
         errors.append("consent_required")
 
@@ -210,6 +255,7 @@ def duplicate_key(quote: dict[str, Any]) -> str:
             quote.get("unit", ""),
             quote.get("delivery_city", "").lower(),
             quote.get("notes", "").lower()[:80],
+            ",".join(item.get("sku", "") for item in quote.get("items", [])),
         ]
     )
     return "quote:" + hashlib.sha1(raw_key.encode("utf-8")).hexdigest()

@@ -12,7 +12,15 @@
   "urgency": "this_week",
   "delivery_city": "Cucuta",
   "notes": "Necesito 4 lamparas LED para comedor",
+  "items": [
+    {
+      "sku": "LAM-LED-18W",
+      "name": "Panel LED 18W redondo",
+      "category": "lamparas",
+      "quantity": 4,
+      "unit": "unidad"
+    }
+  ],
   "source": "manual_test",
   "consent": true
 }
-

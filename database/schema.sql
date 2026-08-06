@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS quote_requests (
   delivery_city VARCHAR(120) NOT NULL DEFAULT 'Cucuta',
   source VARCHAR(100) NOT NULL DEFAULT 'electropatios_web',
   notes TEXT,
+  items_json JSON NULL,
   priority ENUM('high', 'medium', 'low') NOT NULL DEFAULT 'low',
   score TINYINT UNSIGNED NOT NULL DEFAULT 0,
   status ENUM('new', 'pending_review', 'qualified', 'quoted', 'won', 'lost')
@@ -62,4 +63,3 @@ CREATE TABLE IF NOT EXISTS automation_errors (
   INDEX idx_automation_errors_resolved (resolved),
   INDEX idx_automation_errors_created_at (created_at)
 );
-

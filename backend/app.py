@@ -101,6 +101,7 @@ def find_mysql_duplicate(duplicate_key: str) -> dict[str, Any] | None:
 
 # Guarda una cotizacion nueva en MySQL y tambien registra un evento.
 def save_mysql_quote(quote: dict[str, Any]) -> None:
+    quote_for_mysql = {**quote, "items_json": json.dumps(quote.get("items", []), ensure_ascii=True)}
     with mysql_connection() as connection:
         cursor = connection.cursor()
         cursor.execute(
@@ -108,19 +109,19 @@ def save_mysql_quote(quote: dict[str, Any]) -> None:
             INSERT INTO quote_requests (
                 id, duplicate_key, full_name, email, phone, customer_type,
                 company_name, request_type, product_category, quantity, unit,
-                budget_cop, urgency, delivery_city, source, notes, priority,
+                budget_cop, urgency, delivery_city, source, notes, items_json, priority,
                 score, status, priority_reason, created_at
             )
             VALUES (
                 %(id)s, %(duplicate_key)s, %(full_name)s, %(email)s, %(phone)s,
                 %(customer_type)s, %(company_name)s, %(request_type)s,
                 %(product_category)s, %(quantity)s, %(unit)s, %(budget_cop)s,
-                %(urgency)s, %(delivery_city)s, %(source)s, %(notes)s,
+                %(urgency)s, %(delivery_city)s, %(source)s, %(notes)s, %(items_json)s,
                 %(priority)s, %(score)s, %(status)s, %(priority_reason)s,
                 %(created_at)s
             )
             """,
-            quote,
+            quote_for_mysql,
         )
         cursor.execute(
             """

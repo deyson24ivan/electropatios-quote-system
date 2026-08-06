@@ -12,7 +12,15 @@
   "urgency": "hoy",
   "delivery_city": "Los Patios",
   "notes": "Cable #12 para entregar hoy",
+  "items": [
+    {
+      "sku": "CAB-THHN-12",
+      "name": "Cable THHN #12",
+      "category": "cable",
+      "quantity": 120,
+      "unit": "metro"
+    }
+  ],
   "source": "manual_test",
   "consent": true
 }
-

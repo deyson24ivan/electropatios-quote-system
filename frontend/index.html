@@ -7,20 +7,80 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="page-shell">
-      <!-- Esta seccion es la parte principal que ve el cliente. -->
-      <section class="quote-panel" aria-labelledby="page-title">
-        <div class="intro">
-          <p class="eyebrow">Electropatios</p>
-          <h1 id="page-title">Material electrico para hogares, tecnicos y empresas</h1>
-          <p class="summary">
-            Cotiza lamparas, cable, tuberia, conectores, breakers y accesorios.
-            Un asesor confirma disponibilidad, precio y forma de entrega.
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Electropatios inicio">
+        <span class="brand-mark">E</span>
+        <span>
+          <strong>Electropatios</strong>
+          <small>Material electrico</small>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Navegacion principal">
+        <a href="#productos">Productos</a>
+        <a href="#pedido">Pedido</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+
+      <button class="cart-button" id="cart-toggle" type="button">
+        Pedido <span id="cart-count">0</span>
+      </button>
+    </header>
+
+    <main>
+      <!-- Esta es la primera parte que ve el cliente cuando entra a la pagina. -->
+      <section class="hero" id="inicio">
+        <div class="hero-copy">
+          <p class="eyebrow">Cucuta y zona metropolitana</p>
+          <h1>Material electrico para instalaciones, obras y mantenimiento</h1>
+          <p>
+            Encuentra cable, tuberia, conectores, lamparas, breakers,
+            tomacorrientes y herramientas. Agrega productos al pedido y un
+            asesor confirma precio, disponibilidad y entrega.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#productos">Ver productos</a>
+            <a class="secondary-link" href="#pedido">Solicitar pedido</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Aqui estan los productos que el cliente puede mirar y agregar al pedido. -->
+      <section class="catalog-section" id="productos" aria-labelledby="catalog-title">
+        <div class="section-heading">
+          <p class="eyebrow">Catalogo</p>
+          <h2 id="catalog-title">Productos principales</h2>
+          <p>
+            Filtra por categoria o busca una referencia. Si no ves el producto
+            exacto, agregalo como "otro producto" en el detalle del pedido.
           </p>
         </div>
 
-        <!-- Este formulario recoge los datos necesarios para responder una cotizacion. -->
+        <div class="catalog-tools">
+          <label class="search-box">
+            Buscar producto
+            <input id="search-input" type="search" placeholder="Ej: cable, breaker, lampara" />
+          </label>
+
+          <div class="category-tabs" id="category-tabs" aria-label="Categorias"></div>
+        </div>
+
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+
+      <!-- Este bloque reemplaza la idea de pago online: el cliente arma un pedido y se confirma por asesor. -->
+      <section class="checkout-section" id="pedido" aria-labelledby="order-title">
+        <div class="order-summary">
+          <p class="eyebrow">Tu pedido</p>
+          <h2 id="order-title">Productos seleccionados</h2>
+          <div id="cart-items" class="cart-items">
+            <p class="muted">Agrega productos del catalogo para preparar tu pedido.</p>
+          </div>
+        </div>
+
         <form id="quote-form" class="quote-form">
+          <h2>Datos de contacto</h2>
+
           <label>
             Nombre completo
             <input name="full_name" autocomplete="name" placeholder="Ana Perez" required />
@@ -58,54 +118,6 @@
 
           <div class="two-column">
             <label>
-              Que necesitas
-              <select name="request_type">
-                <option value="quote">Cotizacion</option>
-                <option value="question">Pregunta de producto</option>
-                <option value="advisor">Asesoria tecnica</option>
-              </select>
-            </label>
-
-            <label>
-              Categoria
-              <select name="product_category" required>
-                <option value="">Seleccionar</option>
-                <option value="lamparas">Lamparas</option>
-                <option value="conectores">Conectores</option>
-                <option value="cable">Cable</option>
-                <option value="tuberia">Tuberia</option>
-                <option value="proteccion">Breakers, tableros y tomas</option>
-                <option value="herramientas">Herramientas y accesorios</option>
-                <option value="otros">Otro producto</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="three-column">
-            <label>
-              Cantidad
-              <input name="quantity" inputmode="numeric" placeholder="100" required />
-            </label>
-
-            <label>
-              Unidad
-              <select name="unit">
-                <option value="unidad">Unidad</option>
-                <option value="metro">Metro</option>
-                <option value="rollo">Rollo</option>
-                <option value="caja">Caja</option>
-                <option value="paquete">Paquete</option>
-              </select>
-            </label>
-
-            <label>
-              Presupuesto aproximado
-              <input name="budget" inputmode="numeric" placeholder="Opcional" />
-            </label>
-          </div>
-
-          <div class="two-column">
-            <label>
               Cuando lo necesitas
               <select name="urgency">
                 <option value="this_week">Esta semana</option>
@@ -123,8 +135,8 @@
           </div>
 
           <label>
-            Detalle del producto
-            <textarea name="notes" rows="4" placeholder="Ej: cable #12, 100 metros, para entregar hoy en Los Patios"></textarea>
+            Detalle adicional
+            <textarea name="notes" rows="4" placeholder="Ej: confirmar calibre, marca, disponibilidad o entrega"></textarea>
           </label>
 
           <label class="checkbox-row">
@@ -132,37 +144,33 @@
             Acepto ser contactado por un asesor de Electropatios.
           </label>
 
-          <button type="submit">Solicitar cotizacion</button>
+          <button type="submit">Enviar pedido</button>
         </form>
       </section>
 
-      <!-- Esta columna da confianza y muestra productos sin hablar de la parte tecnica. -->
-      <aside class="store-panel" aria-label="Informacion de Electropatios">
-        <div class="product-media" role="img" aria-label="Materiales electricos para instalacion"></div>
-
-        <div class="service-box">
-          <p class="eyebrow">Atencion local</p>
-          <h2>Respuesta para compras pequenas, obras y pedidos por volumen</h2>
-          <p>
-            Indica cantidades, calibre, medidas o referencia del producto. Si falta
-            algun dato, un asesor lo confirma contigo antes de preparar la cotizacion.
-          </p>
+      <section class="contact-section" id="contacto">
+        <div>
+          <p class="eyebrow">Contacto</p>
+          <h2>Atencion para compras pequenas y pedidos por volumen</h2>
         </div>
-
-        <div class="product-list" aria-label="Categorias principales">
-          <span>Lamparas</span>
-          <span>Cable</span>
-          <span>Tuberia</span>
-          <span>Conectores</span>
-          <span>Breakers</span>
-          <span>Herramientas</span>
-        </div>
-
-        <div id="result-card" class="result-card" aria-live="polite">
-          <p class="muted">Cuando envies la solicitud, veras aqui la confirmacion.</p>
-        </div>
-      </aside>
+        <p>
+          Si necesitas una referencia especifica, deja el detalle en el pedido.
+          Un asesor revisa la solicitud y confirma precio, disponibilidad y
+          forma de entrega.
+        </p>
+      </section>
     </main>
+
+    <aside class="cart-drawer" id="cart-drawer" aria-label="Resumen del pedido">
+      <div class="drawer-header">
+        <h2>Pedido</h2>
+        <button id="close-cart" type="button" aria-label="Cerrar pedido">Cerrar</button>
+      </div>
+      <div id="drawer-items" class="cart-items"></div>
+      <a class="primary-link full-width" href="#pedido">Completar datos</a>
+    </aside>
+
+    <div id="result-card" class="result-card" aria-live="polite"></div>
 
     <script src="script.js"></script>
   </body>
