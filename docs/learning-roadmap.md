@@ -14,7 +14,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 6 - IA | Lista en modo seguro | Clasificacion, prompts, guardrails y paso a asesor humano sin modelo externo. |
 | Fase 7 - Voice AI | Lista en modo seguro | Agente telefonico simulado con transcripcion, clasificacion, respuesta segura y handoff. |
 | Fase 8 - WordPress + hosting | Lista version local | Pagina local completa; pendiente WordPress real, dominio, DNS y SSL. |
-| Fase 9 - Tracking | Pendiente | Analytics, Tag Manager, Pixel y UTM. |
+| Fase 9 - Tracking | Lista en modo local | Eventos, conversiones y UTM sin conectar herramientas externas. |
 | Fase 10 - Email infrastructure | Pendiente | SPF, DKIM, DMARC y entregabilidad. |
 | Fase 11 - Deploy | Pendiente | API y pagina publicadas online. |
 | Fase 12 - Portfolio | Pendiente | README final, diagramas, capturas y demo. |
@@ -66,3 +66,9 @@ Herramientas: Voice AI, transcripciones, n8n, API REST, guardrails, human handof
 Aprendi primero la parte local de una pagina tipo negocio real. La pagina tiene inicio, catalogo, filtros, carrito de cotizacion, formulario, servicios, preguntas frecuentes y contacto. Todavia no pagamos hosting ni dominio; primero dejamos clara la experiencia antes de migrarla a WordPress real.
 
 Herramientas: HTML, CSS, JavaScript, estructura de landing, formulario comercial, n8n, conceptos de WordPress, hosting, dominio, DNS y SSL.
+
+## Fase 9 - Tracking
+
+Aprendi a medir eventos importantes de la pagina sin conectar Google Analytics, Tag Manager o Meta Pixel todavia. La pagina lee parametros UTM, crea una sesion local, guarda eventos de comportamiento y marca la conversion principal cuando una cotizacion se envia bien.
+
+Herramientas: eventos, conversiones, UTM, tracking local, JavaScript, API REST, conceptos de Google Analytics, Tag Manager y Pixel.

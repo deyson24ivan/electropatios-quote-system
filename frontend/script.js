@@ -20,6 +20,22 @@ const N8N_WEBHOOK_URL = "http://127.0.0.1:5678/webhook/electropatios-order";
 const ORDER_URL = USE_N8N_WEBHOOK ? N8N_WEBHOOK_URL : API_URL;
 const CART_STORAGE_KEY = "electropatios_cart";
 
+function track(eventName, metadata = {}) {
+  if (!window.ElectropatiosTracking) return;
+  window.ElectropatiosTracking.trackEvent(eventName, metadata);
+}
+
+function trackingAttribution() {
+  if (!window.ElectropatiosTracking) {
+    return {
+      source: "direct_local",
+      medium: "local",
+      campaign: "sin_campana",
+    };
+  }
+  return window.ElectropatiosTracking.getAttribution();
+}
+
 // Catalogo local de la pagina. Despues puede salir de MySQL, Sheets o un inventario real.
 const products = [
   {
@@ -264,6 +280,10 @@ function selectCategory(category) {
   selectedCategory = category;
   renderCategoryTabs();
   renderProducts();
+  track("category_filter", {
+    category,
+    source: "category_strip",
+  });
   document.querySelector("#productos").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -282,6 +302,13 @@ function addToCart(sku) {
   saveCart();
   renderCart();
   cartDrawer.classList.add("open");
+  track("product_add", {
+    sku: product.sku,
+    name: product.name,
+    category: product.category,
+    quantity: existing ? existing.quantity : 1,
+    cart_items: cart.reduce((total, item) => total + item.quantity, 0),
+  });
 }
 
 // Cambia cantidades dentro del pedido.
@@ -298,7 +325,12 @@ function updateCartQuantity(sku, change) {
 }
 
 // Limpia todos los productos del pedido.
-function clearCart() {
+function clearCart(shouldTrack = true) {
+  if (shouldTrack) {
+    track("cart_clear", {
+      cart_items: cart.reduce((total, item) => total + item.quantity, 0),
+    });
+  }
   cart = [];
   saveCart();
   renderCart();
@@ -337,6 +369,7 @@ function renderCart() {
 function formToPayload(formElement) {
   const data = new FormData(formElement);
   const mainItem = cart[0];
+  const attribution = trackingAttribution();
   const itemSummary = cart
     .map((item) => `${item.quantity} ${item.unit} - ${item.name} (${item.sku})`)
     .join("; ");
@@ -369,7 +402,18 @@ function formToPayload(formElement) {
       quantity: item.quantity,
       unit: item.unit,
     })),
-    source: "electropatios_storefront_local",
+    source: attribution.source,
+    tracking: {
+      session_id: window.ElectropatiosTracking ? window.ElectropatiosTracking.getTrackingSessionId() : "",
+      source: attribution.source,
+      medium: attribution.medium,
+      campaign: attribution.campaign,
+      utm_source: attribution.utm_source || "",
+      utm_medium: attribution.utm_medium || "",
+      utm_campaign: attribution.utm_campaign || "",
+      utm_term: attribution.utm_term || "",
+      utm_content: attribution.utm_content || "",
+    },
     consent: data.get("consent") === "on",
   };
 }
@@ -424,6 +468,10 @@ categoryTabs.addEventListener("click", (event) => {
   selectedCategory = button.dataset.category;
   renderCategoryTabs();
   renderProducts();
+  track("category_filter", {
+    category: selectedCategory,
+    source: "catalog_sidebar",
+  });
 });
 
 document.addEventListener("click", (event) => {
@@ -438,10 +486,22 @@ document.addEventListener("click", (event) => {
   if (jump) selectCategory(jump.dataset.jumpCategory);
 });
 
-searchInput.addEventListener("input", renderProducts);
+searchInput.addEventListener("input", () => {
+  renderProducts();
+  const search = searchInput.value.trim();
+  if (search.length >= 3) {
+    track("catalog_search", {
+      search,
+      results: visibleProducts().length,
+    });
+  }
+});
 
 cartToggle.addEventListener("click", () => {
   cartDrawer.classList.add("open");
+  track("cart_open", {
+    cart_items: cart.reduce((total, item) => total + item.quantity, 0),
+  });
 });
 
 closeCart.addEventListener("click", () => {
@@ -455,6 +515,9 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   if (!cart.length) {
+    track("quote_submit_error", {
+      reason: "empty_cart",
+    });
     renderError("Agrega al menos un producto antes de enviar el pedido.");
     return;
   }
@@ -462,27 +525,48 @@ form.addEventListener("submit", async (event) => {
   const button = form.querySelector("button[type='submit']");
   button.disabled = true;
   button.textContent = "Enviando...";
+  track("quote_submit_attempt", {
+    cart_items: cart.reduce((total, item) => total + item.quantity, 0),
+    categories: [...new Set(cart.map((item) => item.category))].join(","),
+  });
 
   try {
+    const payload = formToPayload(form);
     const response = await fetch(ORDER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formToPayload(form)),
+      body: JSON.stringify(payload),
     });
 
     const body = await parseResponse(response);
     if (!response.ok) {
+      track("quote_submit_error", {
+        status: response.status,
+        errors: body.messages || body.errors || body.missing_fields || [],
+      });
       renderError("Falta informacion para preparar el pedido.", body.messages || body.errors || body.missing_fields || []);
       return;
     }
 
+    track("quote_submit_success", {
+      quote_id: body.quote_id || (body.quote && body.quote.id) || "",
+      lead_id: body.lead_id || (body.lead && body.lead.id) || "",
+      priority: body.priority || (body.lead && body.lead.priority) || "",
+      duplicate: Boolean(body.duplicate),
+      source: payload.source,
+      campaign: payload.tracking.campaign,
+    });
     renderSuccess(body);
     form.reset();
-    clearCart();
+    clearCart(false);
     cartDrawer.classList.remove("open");
   } catch (error) {
+    track("quote_submit_error", {
+      reason: "network_error",
+      message: error.message,
+    });
     renderError("No pudimos enviar el pedido en este momento.", [error.message]);
   } finally {
     button.disabled = false;

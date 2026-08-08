@@ -37,6 +37,8 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | GET | `/api/ai/analyses` | Lista analisis de IA guardados localmente. |
 | POST | `/api/voice/intake` | Recibe una transcripcion de llamada y prepara respuesta telefonica segura. |
 | GET | `/api/voice/calls` | Lista llamadas simuladas guardadas localmente. |
+| POST | `/api/tracking/events` | Guarda un evento de tracking local. |
+| GET | `/api/tracking/events` | Lista eventos de tracking guardados localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -247,6 +249,46 @@ La API responde algo como:
 
 Esto significa que el sistema actua como agente telefonico, pero todavia no llama a Twilio, GoHighLevel Phone, ElevenLabs ni a un modelo externo.
 
+## Respuesta tracking en modo local
+
+La pagina manda eventos a:
+
+```text
+POST http://localhost:5000/api/tracking/events
+```
+
+Ejemplo:
+
+```json
+{
+  "event_name": "product_add",
+  "session_id": "manual-session-001",
+  "utm_source": "facebook",
+  "utm_medium": "paid_social",
+  "utm_campaign": "cables_agosto",
+  "metadata": {
+    "sku": "CAB-THHN-12",
+    "quantity": 2
+  }
+}
+```
+
+La API responde algo como:
+
+```json
+{
+  "ok": true,
+  "tracking_event": {
+    "event_name": "product_add",
+    "mode": "local_tracking",
+    "utm_source": "facebook",
+    "utm_campaign": "cables_agosto"
+  }
+}
+```
+
+Eso significa que el evento quedo guardado localmente, sin llamar Google Analytics, Tag Manager ni Meta Pixel.
+
 ## Respuesta cuando faltan datos
 
 ```json
@@ -285,6 +327,13 @@ $body = Get-Content -Raw "examples/requests/voice-call-cable-urgent.json"
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/voice/intake" -Method Post -ContentType "application/json" -Body $body
 ```
 
+Para probar tracking local:
+
+```powershell
+$body = Get-Content -Raw "examples/requests/tracking-product-add.json"
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/tracking/events" -Method Post -ContentType "application/json" -Body $body
+```
+
 ## Como lo explicaria en entrevista
 
-El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM. Tambien tengo un endpoint de Voice AI en modo seguro que toma una transcripcion de llamada, detecta intencion, categoria, urgencia y prepara una respuesta telefonica sin inventar precios ni disponibilidad.
+El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM. Tambien tengo tracking local para medir eventos y UTM, y un endpoint de Voice AI en modo seguro que toma una transcripcion de llamada, detecta intencion, categoria, urgencia y prepara una respuesta telefonica sin inventar precios ni disponibilidad.

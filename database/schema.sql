@@ -186,6 +186,30 @@ CREATE TABLE IF NOT EXISTS voice_call_intakes (
   INDEX idx_voice_created_at (created_at)
 );
 
+-- Tracking local: guarda eventos de pagina, UTM y conversiones sin conectar Analytics real todavia.
+CREATE TABLE IF NOT EXISTS tracking_events (
+  id CHAR(36) PRIMARY KEY,
+  mode VARCHAR(80) NOT NULL DEFAULT 'local_tracking',
+  event_name VARCHAR(80) NOT NULL,
+  session_id VARCHAR(120) NULL,
+  page_path VARCHAR(240) NULL,
+  page_title VARCHAR(180) NULL,
+  utm_source VARCHAR(120) NULL,
+  utm_medium VARCHAR(120) NULL,
+  utm_campaign VARCHAR(120) NULL,
+  utm_term VARCHAR(120) NULL,
+  utm_content VARCHAR(120) NULL,
+  referrer VARCHAR(300) NULL,
+  user_agent VARCHAR(300) NULL,
+  metadata_json JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_tracking_event_name (event_name),
+  INDEX idx_tracking_session_id (session_id),
+  INDEX idx_tracking_utm_source (utm_source),
+  INDEX idx_tracking_utm_campaign (utm_campaign),
+  INDEX idx_tracking_created_at (created_at)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

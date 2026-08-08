@@ -13,12 +13,14 @@ try:
     from .ghl_logic import build_crm_sync_record
     from .lead_logic import build_lead_record, build_notification
     from .quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
+    from .tracking_logic import build_tracking_event
     from .voice_logic import build_voice_call_record
 except ImportError:
     from ai_logic import build_ai_analysis
     from ghl_logic import build_crm_sync_record
     from lead_logic import build_lead_record, build_notification
     from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
+    from tracking_logic import build_tracking_event
     from voice_logic import build_voice_call_record
 
 
@@ -31,6 +33,7 @@ NOTIFICATIONS_FILE = DATA_DIR / "notifications.jsonl"
 CRM_SYNCS_FILE = DATA_DIR / "crm_syncs.jsonl"
 AI_ANALYSES_FILE = DATA_DIR / "ai_analyses.jsonl"
 VOICE_CALLS_FILE = DATA_DIR / "voice_calls.jsonl"
+TRACKING_EVENTS_FILE = DATA_DIR / "tracking_events.jsonl"
 ERRORS_FILE = DATA_DIR / "automation_errors.jsonl"
 
 app = Flask(__name__)
@@ -118,6 +121,11 @@ def read_local_ai_analyses() -> list[dict[str, Any]]:
 # Lee las llamadas simuladas del agente telefonico en modo seguro.
 def read_local_voice_calls() -> list[dict[str, Any]]:
     return read_jsonl(VOICE_CALLS_FILE)
+
+
+# Lee eventos de tracking guardados localmente.
+def read_local_tracking_events() -> list[dict[str, Any]]:
+    return read_jsonl(TRACKING_EVENTS_FILE)
 
 
 # Busca si ya existe una solicitud exactamente igual en el respaldo local.
@@ -430,6 +438,34 @@ def save_mysql_voice_call(call: dict[str, Any]) -> None:
         connection.commit()
 
 
+# Guarda eventos de tracking para analizar de donde vienen los pedidos.
+def save_mysql_tracking_event(event: dict[str, Any]) -> None:
+    event_for_mysql = {
+        **event,
+        "metadata_json": json.dumps(event.get("metadata", {}), ensure_ascii=True),
+        "created_at": mysql_datetime(event.get("created_at")),
+    }
+    with mysql_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO tracking_events (
+                id, mode, event_name, session_id, page_path, page_title,
+                utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+                referrer, user_agent, metadata_json, created_at
+            )
+            VALUES (
+                %(id)s, %(mode)s, %(event_name)s, %(session_id)s, %(page_path)s,
+                %(page_title)s, %(utm_source)s, %(utm_medium)s, %(utm_campaign)s,
+                %(utm_term)s, %(utm_content)s, %(referrer)s, %(user_agent)s,
+                %(metadata_json)s, %(created_at)s
+            )
+            """,
+            event_for_mysql,
+        )
+        connection.commit()
+
+
 # Decide donde guardar: primero intenta MySQL; si falla, usa archivo local.
 def save_quote(quote: dict[str, Any]) -> dict[str, Any]:
     if mysql_configured():
@@ -566,6 +602,26 @@ def save_voice_call(call: dict[str, Any]) -> str:
     return "local_jsonl"
 
 
+# Guarda el evento de tracking sin perderlo si MySQL no esta listo.
+def save_tracking_event(event: dict[str, Any]) -> str:
+    if mysql_configured():
+        try:
+            save_mysql_tracking_event(event)
+            return "mysql"
+        except Exception as exc:
+            append_jsonl(
+                ERRORS_FILE,
+                {
+                    "error": str(exc),
+                    "fallback": "local_jsonl",
+                    "tracking_event": event,
+                },
+            )
+
+    append_jsonl(TRACKING_EVENTS_FILE, event)
+    return "local_jsonl"
+
+
 # Flujo completo del formulario: recibe, valida, guarda y responde.
 def handle_quote_request():
     payload = request.get_json(silent=True) or {}
@@ -649,6 +705,18 @@ def handle_voice_call_request():
 
     storage = save_voice_call(call)
     return jsonify({"ok": True, **payload, "voice_call_storage": storage, "voice_call": call}), 201
+
+
+# Recibe eventos de tracking local para entender el comportamiento de la pagina.
+def handle_tracking_event_request():
+    payload = request.get_json(silent=True) or {}
+    event, errors = build_tracking_event(payload)
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors, "tracking_event": event}), 400
+
+    storage = save_tracking_event(event)
+    return jsonify({"ok": True, "tracking_event_storage": storage, "tracking_event": event}), 201
 
 
 # Endpoint sencillo para revisar si la API esta viva.
@@ -788,6 +856,25 @@ def list_voice_calls():
         return jsonify({"ok": False, "error": "invalid admin token"}), 401
 
     return jsonify({"ok": True, "voice_calls": read_local_voice_calls()})
+
+
+@app.route("/api/tracking/events", methods=["OPTIONS"])
+def tracking_events_options():
+    return "", 204
+
+
+@app.route("/api/tracking/events", methods=["POST"])
+def create_tracking_event():
+    return handle_tracking_event_request()
+
+
+@app.route("/api/tracking/events", methods=["GET"])
+def list_tracking_events():
+    expected_token = os.getenv("ADMIN_TOKEN")
+    if expected_token and request.args.get("token") != expected_token:
+        return jsonify({"ok": False, "error": "invalid admin token"}), 401
+
+    return jsonify({"ok": True, "tracking_events": read_local_tracking_events()})
 
 
 if __name__ == "__main__":

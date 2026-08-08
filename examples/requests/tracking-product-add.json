@@ -1,0 +1,14 @@
+{
+  "event_name": "product_add",
+  "session_id": "manual-session-001",
+  "page_path": "/?utm_source=facebook&utm_medium=paid_social&utm_campaign=cables_agosto",
+  "page_title": "Electropatios - Material electrico en Cucuta",
+  "utm_source": "facebook",
+  "utm_medium": "paid_social",
+  "utm_campaign": "cables_agosto",
+  "metadata": {
+    "sku": "CAB-THHN-12",
+    "category": "cable",
+    "quantity": 2
+  }
+}

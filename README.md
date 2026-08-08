@@ -17,6 +17,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Modo seguro de GoHighLevel para preparar contactos y oportunidades sin enviar datos reales.
 - IA en modo seguro para clasificar pedidos, aplicar guardrails y preparar handoff humano.
 - Voice AI en modo seguro para simular llamadas, entender pedidos y preparar respuesta telefonica.
+- Tracking local con eventos, UTM y conversiones antes de conectar Analytics real.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -51,6 +52,7 @@ electropatios-quote-system/
 |   |-- gohighlevel-safe-mode-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
+|   |-- tracking-guide.md
 |   |-- voice-ai-safe-mode-guide.md
 |   |-- wordpress-local-web-guide.md
 |   |-- learning-roadmap.md
@@ -60,6 +62,7 @@ electropatios-quote-system/
 |-- frontend/
 |   |-- index.html
 |   |-- style.css
+|   |-- tracking.js
 |   `-- script.js
 |-- n8n/
 |   |-- README.md
@@ -139,6 +142,12 @@ Para entender el agente telefonico seguro, revisa:
 docs/voice-ai-safe-mode-guide.md
 ```
 
+Para entender tracking, UTM, Analytics y Pixel, revisa:
+
+```text
+docs/tracking-guide.md
+```
+
 Para entender la pagina local y como se relaciona con WordPress, revisa:
 
 ```text
@@ -173,6 +182,8 @@ flowchart LR
   J --> K["Fila para Google Sheets"]
   J --> L["Modo seguro GoHighLevel"]
   J --> M["Notificacion al asesor"]
+  A --> R["Tracking local"]
+  R --> S["Eventos y UTM"]
   N["Llamada simulada"] --> O["Webhook voice n8n"]
   O --> P["API /api/voice/intake"]
   P --> Q["Respuesta telefonica segura"]
@@ -181,4 +192,4 @@ flowchart LR
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI y prepara sincronizacion CRM sin enviar datos reales.
+Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM y prepara sincronizacion CRM sin enviar datos reales.

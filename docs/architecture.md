@@ -28,6 +28,8 @@ flowchart TD
   R --> S["Fila lista para Sheets"]
   R --> T["GoHighLevel modo seguro"]
   R --> U["Notificacion interna"]
+  A --> Z["Tracking local"]
+  Z --> AA["Eventos, UTM y conversiones"]
   V["Llamada simulada"] --> W["Webhook electropatios-voice-call"]
   W --> X["POST /api/voice/intake"]
   X --> Y["Respuesta telefonica segura"]
@@ -70,6 +72,7 @@ flowchart TD
 - Simular llamadas telefonicas desde una transcripcion y preparar una respuesta segura para el cliente.
 - No confirmar precios, stock, entregas ni recomendaciones electricas tecnicas durante una llamada automatizada.
 - Mantener una pagina local completa con catalogo, carrito, formulario, servicios, preguntas y contacto.
+- Medir eventos de pagina y UTM en modo local antes de conectar Analytics real.
 
 ## Catalogo base
 
@@ -105,3 +108,21 @@ Lo importante de esta fase es aprender el flujo:
 5. Si hace falta asesor, se guarda una notificacion interna.
 
 Cuando exista proveedor real, esta misma estructura se puede conectar a Twilio, GoHighLevel Phone, ElevenLabs o un modelo de voz.
+
+## Tracking local
+
+El tracking local mide acciones importantes de la pagina sin conectar herramientas externas todavia.
+
+Eventos actuales:
+
+- `page_view`
+- `catalog_search`
+- `category_filter`
+- `product_add`
+- `cart_open`
+- `cart_clear`
+- `quote_submit_attempt`
+- `quote_submit_success`
+- `quote_submit_error`
+
+La pagina lee UTM desde la URL y los manda con cada evento. Tambien agrega la fuente al pedido para que el lead pueda saber si vino de Facebook, Google, WhatsApp o una prueba local.
