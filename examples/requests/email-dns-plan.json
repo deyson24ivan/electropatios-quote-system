@@ -1,0 +1,10 @@
+{
+  "domain": "electropatios.com",
+  "mail_from_domain": "mail.electropatios.com",
+  "providers": [
+    "google_workspace",
+    "gohighlevel"
+  ],
+  "report_email": "dmarc@electropatios.com",
+  "daily_volume": 300
+}

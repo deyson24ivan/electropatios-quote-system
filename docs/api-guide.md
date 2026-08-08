@@ -39,6 +39,8 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | GET | `/api/voice/calls` | Lista llamadas simuladas guardadas localmente. |
 | POST | `/api/tracking/events` | Guarda un evento de tracking local. |
 | GET | `/api/tracking/events` | Lista eventos de tracking guardados localmente. |
+| POST | `/api/email/dns-plan` | Prepara SPF, DKIM y DMARC en modo seguro. |
+| GET | `/api/email/dns-plans` | Lista planes email guardados localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -289,6 +291,46 @@ La API responde algo como:
 
 Eso significa que el evento quedo guardado localmente, sin llamar Google Analytics, Tag Manager ni Meta Pixel.
 
+## Respuesta email infrastructure en modo seguro
+
+Para preparar el dominio de correo, PowerShell o n8n manda:
+
+```text
+POST http://localhost:5000/api/email/dns-plan
+```
+
+Ejemplo:
+
+```json
+{
+  "domain": "electropatios.com",
+  "providers": ["google_workspace", "gohighlevel"],
+  "report_email": "dmarc@electropatios.com",
+  "daily_volume": 300
+}
+```
+
+La API responde algo como:
+
+```json
+{
+  "ok": true,
+  "email_dns_plan": {
+    "mode": "safe_mode",
+    "status": "dns_plan_prepared",
+    "will_change_dns": false,
+    "domain": "electropatios.com",
+    "checks": {
+      "spf_record_count_expected": 1,
+      "dmarc_policy": "none",
+      "dkim_needs_provider_key": true
+    }
+  }
+}
+```
+
+Eso significa que el sistema preparo el plan tecnico, pero no cambio DNS ni mando correos reales.
+
 ## Respuesta cuando faltan datos
 
 ```json
@@ -334,6 +376,13 @@ $body = Get-Content -Raw "examples/requests/tracking-product-add.json"
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/tracking/events" -Method Post -ContentType "application/json" -Body $body
 ```
 
+Para probar email infrastructure:
+
+```powershell
+$body = Get-Content -Raw "examples/requests/email-dns-plan.json"
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/email/dns-plan" -Method Post -ContentType "application/json" -Body $body
+```
+
 ## Como lo explicaria en entrevista
 
-El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM. Tambien tengo tracking local para medir eventos y UTM, y un endpoint de Voice AI en modo seguro que toma una transcripcion de llamada, detecta intencion, categoria, urgencia y prepara una respuesta telefonica sin inventar precios ni disponibilidad.
+El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM. Tambien tengo tracking local para medir eventos y UTM, un endpoint de Voice AI en modo seguro y una fase de infraestructura email que prepara SPF, DKIM y DMARC sin tocar DNS reales.

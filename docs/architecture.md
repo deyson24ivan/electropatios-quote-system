@@ -30,6 +30,7 @@ flowchart TD
   R --> U["Notificacion interna"]
   A --> Z["Tracking local"]
   Z --> AA["Eventos, UTM y conversiones"]
+  AA --> AB["Plan email SPF/DKIM/DMARC"]
   V["Llamada simulada"] --> W["Webhook electropatios-voice-call"]
   W --> X["POST /api/voice/intake"]
   X --> Y["Respuesta telefonica segura"]
@@ -73,6 +74,7 @@ flowchart TD
 - No confirmar precios, stock, entregas ni recomendaciones electricas tecnicas durante una llamada automatizada.
 - Mantener una pagina local completa con catalogo, carrito, formulario, servicios, preguntas y contacto.
 - Medir eventos de pagina y UTM en modo local antes de conectar Analytics real.
+- Preparar infraestructura email en modo seguro antes de tocar DNS, dominio o envios reales.
 
 ## Catalogo base
 
@@ -126,3 +128,13 @@ Eventos actuales:
 - `quote_submit_error`
 
 La pagina lee UTM desde la URL y los manda con cada evento. Tambien agrega la fuente al pedido para que el lead pueda saber si vino de Facebook, Google, WhatsApp o una prueba local.
+
+## Email infrastructure en modo seguro
+
+Esta fase prepara los registros que un dominio necesita para mandar correos con mejor reputacion:
+
+- SPF: dice que proveedores pueden mandar correos por el dominio.
+- DKIM: firma los correos con una clave del proveedor.
+- DMARC: define que hacer si un correo falla autenticacion.
+
+La API genera el plan con `POST /api/email/dns-plan`. No cambia DNS reales. Eso es importante porque un registro mal publicado puede afectar correos de la empresa.

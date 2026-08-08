@@ -15,7 +15,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 7 - Voice AI | Lista en modo seguro | Agente telefonico simulado con transcripcion, clasificacion, respuesta segura y handoff. |
 | Fase 8 - WordPress + hosting | Lista version local | Pagina local completa; pendiente WordPress real, dominio, DNS y SSL. |
 | Fase 9 - Tracking | Lista en modo local | Eventos, conversiones y UTM sin conectar herramientas externas. |
-| Fase 10 - Email infrastructure | Pendiente | SPF, DKIM, DMARC y entregabilidad. |
+| Fase 10 - Email infrastructure | Lista en modo seguro | Plan SPF, DKIM, DMARC y entregabilidad sin tocar DNS reales. |
 | Fase 11 - Deploy | Pendiente | API y pagina publicadas online. |
 | Fase 12 - Portfolio | Pendiente | README final, diagramas, capturas y demo. |
 
@@ -72,3 +72,9 @@ Herramientas: HTML, CSS, JavaScript, estructura de landing, formulario comercial
 Aprendi a medir eventos importantes de la pagina sin conectar Google Analytics, Tag Manager o Meta Pixel todavia. La pagina lee parametros UTM, crea una sesion local, guarda eventos de comportamiento y marca la conversion principal cuando una cotizacion se envia bien.
 
 Herramientas: eventos, conversiones, UTM, tracking local, JavaScript, API REST, conceptos de Google Analytics, Tag Manager y Pixel.
+
+## Fase 10 - Email infrastructure
+
+Aprendi la base tecnica para que un dominio pueda mandar correos con mejor reputacion. El sistema prepara un plan de SPF, DKIM y DMARC, valida el dominio y deja advertencias antes de publicar cualquier registro real.
+
+Herramientas: DNS, SPF, DKIM, DMARC, entregabilidad, reputacion de dominio, modo seguro, API REST y pruebas automatizadas.

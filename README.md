@@ -18,6 +18,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - IA en modo seguro para clasificar pedidos, aplicar guardrails y preparar handoff humano.
 - Voice AI en modo seguro para simular llamadas, entender pedidos y preparar respuesta telefonica.
 - Tracking local con eventos, UTM y conversiones antes de conectar Analytics real.
+- Infraestructura email en modo seguro para preparar SPF, DKIM, DMARC y entregabilidad.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -31,15 +32,19 @@ electropatios-quote-system/
 |-- backend/
 |   |-- app.py
 |   |-- ai_logic.py
+|   |-- email_logic.py
 |   |-- ghl_logic.py
 |   |-- lead_logic.py
 |   |-- quote_logic.py
+|   |-- tracking_logic.py
 |   |-- voice_logic.py
 |   `-- tests/
 |       |-- test_ai_logic.py
+|       |-- test_email_logic.py
 |       |-- test_ghl_logic.py
 |       |-- test_lead_logic.py
 |       |-- test_quote_logic.py
+|       |-- test_tracking_logic.py
 |       `-- test_voice_logic.py
 |-- database/
 |   `-- schema.sql
@@ -50,6 +55,7 @@ electropatios-quote-system/
 |   |-- api-guide.md
 |   |-- ai-safe-mode-guide.md
 |   |-- gohighlevel-safe-mode-guide.md
+|   |-- email-infrastructure-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
 |   |-- tracking-guide.md
@@ -148,6 +154,12 @@ Para entender tracking, UTM, Analytics y Pixel, revisa:
 docs/tracking-guide.md
 ```
 
+Para entender SPF, DKIM, DMARC y entregabilidad, revisa:
+
+```text
+docs/email-infrastructure-guide.md
+```
+
 Para entender la pagina local y como se relaciona con WordPress, revisa:
 
 ```text
@@ -184,6 +196,7 @@ flowchart LR
   J --> M["Notificacion al asesor"]
   A --> R["Tracking local"]
   R --> S["Eventos y UTM"]
+  S --> T2["Plan SPF/DKIM/DMARC"]
   N["Llamada simulada"] --> O["Webhook voice n8n"]
   O --> P["API /api/voice/intake"]
   P --> Q["Respuesta telefonica segura"]
@@ -192,4 +205,4 @@ flowchart LR
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM y prepara sincronizacion CRM sin enviar datos reales.
+Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM, prepara sincronizacion CRM y genera un plan seguro de SPF, DKIM y DMARC sin enviar datos reales.

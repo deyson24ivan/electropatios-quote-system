@@ -10,6 +10,7 @@ from flask import Flask, jsonify, request
 
 try:
     from .ai_logic import build_ai_analysis
+    from .email_logic import build_email_dns_plan
     from .ghl_logic import build_crm_sync_record
     from .lead_logic import build_lead_record, build_notification
     from .quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
@@ -17,6 +18,7 @@ try:
     from .voice_logic import build_voice_call_record
 except ImportError:
     from ai_logic import build_ai_analysis
+    from email_logic import build_email_dns_plan
     from ghl_logic import build_crm_sync_record
     from lead_logic import build_lead_record, build_notification
     from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
@@ -34,6 +36,7 @@ CRM_SYNCS_FILE = DATA_DIR / "crm_syncs.jsonl"
 AI_ANALYSES_FILE = DATA_DIR / "ai_analyses.jsonl"
 VOICE_CALLS_FILE = DATA_DIR / "voice_calls.jsonl"
 TRACKING_EVENTS_FILE = DATA_DIR / "tracking_events.jsonl"
+EMAIL_DNS_PLANS_FILE = DATA_DIR / "email_dns_plans.jsonl"
 ERRORS_FILE = DATA_DIR / "automation_errors.jsonl"
 
 app = Flask(__name__)
@@ -126,6 +129,11 @@ def read_local_voice_calls() -> list[dict[str, Any]]:
 # Lee eventos de tracking guardados localmente.
 def read_local_tracking_events() -> list[dict[str, Any]]:
     return read_jsonl(TRACKING_EVENTS_FILE)
+
+
+# Lee planes de DNS/email creados en modo seguro.
+def read_local_email_dns_plans() -> list[dict[str, Any]]:
+    return read_jsonl(EMAIL_DNS_PLANS_FILE)
 
 
 # Busca si ya existe una solicitud exactamente igual en el respaldo local.
@@ -466,6 +474,39 @@ def save_mysql_tracking_event(event: dict[str, Any]) -> None:
         connection.commit()
 
 
+# Guarda el plan de DNS/email. No cambia DNS reales, solo deja evidencia para revisar.
+def save_mysql_email_dns_plan(plan: dict[str, Any]) -> None:
+    plan_for_mysql = {
+        **plan,
+        "will_change_dns": bool(plan.get("will_change_dns")),
+        "providers_json": json.dumps(plan.get("providers", []), ensure_ascii=True),
+        "records_json": json.dumps(plan.get("records", []), ensure_ascii=True),
+        "checks_json": json.dumps(plan.get("checks", {}), ensure_ascii=True),
+        "warnings_json": json.dumps(plan.get("warnings", []), ensure_ascii=True),
+        "next_steps_json": json.dumps(plan.get("next_steps", []), ensure_ascii=True),
+        "created_at": mysql_datetime(plan.get("created_at")),
+    }
+    with mysql_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO email_dns_plans (
+                id, mode, status, will_change_dns, domain, mail_from_domain,
+                report_email, daily_volume, providers_json, records_json,
+                checks_json, warnings_json, next_steps_json, created_at
+            )
+            VALUES (
+                %(id)s, %(mode)s, %(status)s, %(will_change_dns)s, %(domain)s,
+                %(mail_from_domain)s, %(report_email)s, %(daily_volume)s,
+                %(providers_json)s, %(records_json)s, %(checks_json)s,
+                %(warnings_json)s, %(next_steps_json)s, %(created_at)s
+            )
+            """,
+            plan_for_mysql,
+        )
+        connection.commit()
+
+
 # Decide donde guardar: primero intenta MySQL; si falla, usa archivo local.
 def save_quote(quote: dict[str, Any]) -> dict[str, Any]:
     if mysql_configured():
@@ -622,6 +663,26 @@ def save_tracking_event(event: dict[str, Any]) -> str:
     return "local_jsonl"
 
 
+# Guarda el plan de infraestructura email sin tocar DNS reales.
+def save_email_dns_plan(plan: dict[str, Any]) -> str:
+    if mysql_configured():
+        try:
+            save_mysql_email_dns_plan(plan)
+            return "mysql"
+        except Exception as exc:
+            append_jsonl(
+                ERRORS_FILE,
+                {
+                    "error": str(exc),
+                    "fallback": "local_jsonl",
+                    "email_dns_plan": plan,
+                },
+            )
+
+    append_jsonl(EMAIL_DNS_PLANS_FILE, plan)
+    return "local_jsonl"
+
+
 # Flujo completo del formulario: recibe, valida, guarda y responde.
 def handle_quote_request():
     payload = request.get_json(silent=True) or {}
@@ -717,6 +778,18 @@ def handle_tracking_event_request():
 
     storage = save_tracking_event(event)
     return jsonify({"ok": True, "tracking_event_storage": storage, "tracking_event": event}), 201
+
+
+# Recibe un dominio y prepara el plan seguro de SPF, DKIM y DMARC.
+def handle_email_dns_plan_request():
+    payload = request.get_json(silent=True) or {}
+    plan, errors = build_email_dns_plan(payload)
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors, "email_dns_plan": plan}), 400
+
+    storage = save_email_dns_plan(plan)
+    return jsonify({"ok": True, "email_dns_plan_storage": storage, "email_dns_plan": plan}), 201
 
 
 # Endpoint sencillo para revisar si la API esta viva.
@@ -875,6 +948,25 @@ def list_tracking_events():
         return jsonify({"ok": False, "error": "invalid admin token"}), 401
 
     return jsonify({"ok": True, "tracking_events": read_local_tracking_events()})
+
+
+@app.route("/api/email/dns-plan", methods=["OPTIONS"])
+def email_dns_plan_options():
+    return "", 204
+
+
+@app.route("/api/email/dns-plan", methods=["POST"])
+def create_email_dns_plan():
+    return handle_email_dns_plan_request()
+
+
+@app.route("/api/email/dns-plans", methods=["GET"])
+def list_email_dns_plans():
+    expected_token = os.getenv("ADMIN_TOKEN")
+    if expected_token and request.args.get("token") != expected_token:
+        return jsonify({"ok": False, "error": "invalid admin token"}), 401
+
+    return jsonify({"ok": True, "email_dns_plans": read_local_email_dns_plans()})
 
 
 if __name__ == "__main__":

@@ -210,6 +210,27 @@ CREATE TABLE IF NOT EXISTS tracking_events (
   INDEX idx_tracking_created_at (created_at)
 );
 
+-- Planes de infraestructura email: prepara SPF, DKIM y DMARC sin tocar DNS reales.
+CREATE TABLE IF NOT EXISTS email_dns_plans (
+  id CHAR(36) PRIMARY KEY,
+  mode VARCHAR(80) NOT NULL DEFAULT 'safe_mode',
+  status VARCHAR(80) NOT NULL DEFAULT 'dns_plan_prepared',
+  will_change_dns BOOLEAN NOT NULL DEFAULT FALSE,
+  domain VARCHAR(180) NOT NULL,
+  mail_from_domain VARCHAR(180) NULL,
+  report_email VARCHAR(190) NULL,
+  daily_volume INT UNSIGNED NOT NULL DEFAULT 0,
+  providers_json JSON NULL,
+  records_json JSON NULL,
+  checks_json JSON NULL,
+  warnings_json JSON NULL,
+  next_steps_json JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_email_dns_domain (domain),
+  INDEX idx_email_dns_status (status),
+  INDEX idx_email_dns_created_at (created_at)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
