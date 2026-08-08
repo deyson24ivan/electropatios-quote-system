@@ -15,6 +15,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Fila preparada para Google Sheets.
 - Modo seguro de GoHighLevel para preparar contactos y oportunidades sin enviar datos reales.
 - IA en modo seguro para clasificar pedidos, aplicar guardrails y preparar handoff humano.
+- Voice AI en modo seguro para simular llamadas, entender pedidos y preparar respuesta telefonica.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -31,11 +32,13 @@ electropatios-quote-system/
 |   |-- ghl_logic.py
 |   |-- lead_logic.py
 |   |-- quote_logic.py
+|   |-- voice_logic.py
 |   `-- tests/
 |       |-- test_ai_logic.py
 |       |-- test_ghl_logic.py
 |       |-- test_lead_logic.py
-|       `-- test_quote_logic.py
+|       |-- test_quote_logic.py
+|       `-- test_voice_logic.py
 |-- database/
 |   `-- schema.sql
 |-- examples/
@@ -47,16 +50,19 @@ electropatios-quote-system/
 |   |-- gohighlevel-safe-mode-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
+|   |-- voice-ai-safe-mode-guide.md
 |   |-- learning-roadmap.md
 |   `-- workflows/
-|       `-- quote-workflow.md
+|       |-- quote-workflow.md
+|       `-- voice-workflow.md
 |-- frontend/
 |   |-- index.html
 |   |-- style.css
 |   `-- script.js
 |-- n8n/
 |   |-- README.md
-|   `-- electropatios-order-workflow.json
+|   |-- electropatios-order-workflow.json
+|   `-- electropatios-voice-workflow.json
 |-- .env.example
 `-- requirements.txt
 ```
@@ -125,6 +131,12 @@ Para entender la IA segura, revisa:
 docs/ai-safe-mode-guide.md
 ```
 
+Para entender el agente telefonico seguro, revisa:
+
+```text
+docs/voice-ai-safe-mode-guide.md
+```
+
 Cuando n8n este corriendo, su editor local queda en:
 
 ```text
@@ -153,8 +165,12 @@ flowchart LR
   J --> K["Fila para Google Sheets"]
   J --> L["Modo seguro GoHighLevel"]
   J --> M["Notificacion al asesor"]
+  N["Llamada simulada"] --> O["Webhook voice n8n"]
+  O --> P["API /api/voice/intake"]
+  P --> Q["Respuesta telefonica segura"]
+  P --> M
 ```
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails y prepara sincronizacion CRM sin enviar datos reales.
+Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI y prepara sincronizacion CRM sin enviar datos reales.

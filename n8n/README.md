@@ -1,6 +1,8 @@
 # n8n
 
-`electropatios-order-workflow.json` es un workflow inicial para importar y adaptar en n8n.
+`electropatios-order-workflow.json` es el workflow principal de pedidos.
+
+`electropatios-voice-workflow.json` es el workflow de llamadas simuladas para Voice AI en modo seguro.
 
 Instalacion local actual:
 
@@ -17,12 +19,20 @@ Ruta activa probada en local:
 POST http://127.0.0.1:5678/webhook/electropatios-order
 ```
 
+Ruta de Voice AI para probar llamadas simuladas:
+
+```text
+POST http://127.0.0.1:5678/webhook/electropatios-voice-call
+```
+
 Comandos principales:
 
 ```powershell
 npx.cmd --yes n8n@2.33.5 start
 npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-order-workflow.json
 npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --active=true
+npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-voice-workflow.json
+npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-voice-intake --active=true
 ```
 
 ## Objetivo del workflow
@@ -37,6 +47,15 @@ npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --activ
 8. Guardar una notificacion interna cuando sea prioridad alta.
 9. Responder al formulario o prueba manual.
 
+## Objetivo del workflow de voz
+
+1. Recibir una llamada simulada por webhook.
+2. Validar que exista transcripcion.
+3. Enviar la transcripcion a `POST /api/voice/intake`.
+4. Recibir intencion, categoria, prioridad y respuesta telefonica.
+5. Si necesita asesor, preparar y guardar una notificacion interna.
+6. Responder con el texto que diria el agente.
+
 ## Pendiente al importarlo
 
 - Cambiar URLs locales por URLs reales.
@@ -45,6 +64,7 @@ npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --activ
 - Conectar el nodo real de Google Sheets.
 - Conectar GoHighLevel real cuando existan token, location, pipeline y stages.
 - Conectar IA real cuando tengamos prompts y guardrails suficientemente probados.
+- Conectar proveedor de voz real cuando ya se decida si sera Twilio, GoHighLevel Phone u otra herramienta.
 - Configurar credenciales de email, WhatsApp o Slack.
 - Agregar manejo de errores por nodo.
 - Agregar retry para APIs externas.

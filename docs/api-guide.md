@@ -35,6 +35,8 @@ Ese `POST` significa: "quiero enviar informacion nueva".
 | POST | `/api/ai/classify` | Clasifica intencion, categoria y handoff en modo seguro. |
 | POST | `/api/ai/assist` | Prepara una respuesta segura para el cliente. |
 | GET | `/api/ai/analyses` | Lista analisis de IA guardados localmente. |
+| POST | `/api/voice/intake` | Recibe una transcripcion de llamada y prepara respuesta telefonica segura. |
+| GET | `/api/voice/calls` | Lista llamadas simuladas guardadas localmente. |
 
 ## Ejemplo de JSON que recibe la API
 
@@ -207,6 +209,44 @@ La API responde algo como:
 
 Eso significa que la IA clasifico el caso, pero no llamo ningun modelo externo.
 
+## Respuesta Voice AI en modo seguro
+
+Para simular una llamada telefonica, n8n o PowerShell manda:
+
+```text
+POST http://localhost:5000/api/voice/intake
+```
+
+Ejemplo:
+
+```json
+{
+  "caller_name": "Carlos Ramirez",
+  "phone": "+57 301 222 3344",
+  "delivery_city": "Los Patios",
+  "transcript": "Necesito 120 metros de cable THHN para hoy."
+}
+```
+
+La API responde algo como:
+
+```json
+{
+  "ok": true,
+  "voice_call": {
+    "mode": "safe_mode",
+    "provider": "local_simulator",
+    "intent": "quote",
+    "product_category": "cable",
+    "priority": "high",
+    "handoff_required": true,
+    "safe_voice_reply": "Claro, Carlos. Dejo registrada tu solicitud de cable thhn. Un asesor de Electropatios confirma precio, disponibilidad y entrega antes de cerrar la cotizacion."
+  }
+}
+```
+
+Esto significa que el sistema actua como agente telefonico, pero todavia no llama a Twilio, GoHighLevel Phone, ElevenLabs ni a un modelo externo.
+
 ## Respuesta cuando faltan datos
 
 ```json
@@ -238,6 +278,13 @@ $body = Get-Content -Raw "examples/requests/quote-cable-urgent.json"
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/quotes" -Method Post -ContentType "application/json" -Body $body
 ```
 
+Para probar la llamada simulada:
+
+```powershell
+$body = Get-Content -Raw "examples/requests/voice-call-cable-urgent.json"
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/voice/intake" -Method Post -ContentType "application/json" -Body $body
+```
+
 ## Como lo explicaria en entrevista
 
-El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM.
+El formulario de Electropatios no guarda los datos directamente. Primero convierte los campos en JSON y los envia por HTTP. n8n recibe el pedido, llama a mi API en Python, la API valida la solicitud, calcula prioridad comercial, detecta duplicados y crea un lead listo para Sheets o CRM. Tambien tengo un endpoint de Voice AI en modo seguro que toma una transcripcion de llamada, detecta intencion, categoria, urgencia y prepara una respuesta telefonica sin inventar precios ni disponibilidad.

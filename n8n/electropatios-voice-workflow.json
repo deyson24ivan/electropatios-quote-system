@@ -1,0 +1,198 @@
+{
+  "id": "electropatios-voice-intake",
+  "name": "Electropatios Voice Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "electropatios-voice-call",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-electropatios-voice",
+      "name": "Webhook Electropatios Voice",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "electropatios-voice-webhook",
+      "position": [260, 300],
+      "notesInFlow": true,
+      "notes": "Esta caja recibe una llamada simulada de Electropatios. En la vida real aqui entraria Twilio, un telefono o un proveedor de voz."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Saco la llamada del body y reviso que tenga transcripcion.\n// Para practicar, la llamada llega como JSON escrito por nosotros.\nlet call = $json.body ?? $json;\n\nif (typeof call === 'string') {\n  try {\n    call = JSON.parse(call);\n  } catch (error) {\n    call = {};\n  }\n}\n\nconst transcript = call.transcript ?? call.message ?? call.notes;\nconst missing = [];\n\nif (!transcript) {\n  missing.push('transcript');\n}\n\nreturn [{\n  json: {\n    ...call,\n    is_valid: missing.length === 0,\n    validation_status: missing.length === 0 ? 'valid' : 'invalid',\n    missing_fields: missing,\n    received_at: new Date().toISOString(),\n  }\n}];"
+      },
+      "id": "validate-voice-call",
+      "name": "Validate Voice Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300],
+      "notesInFlow": true,
+      "notes": "Aqui reviso si la llamada trae texto suficiente para que el agente la pueda procesar."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "voice-call-is-valid",
+              "leftValue": "={{ $json.validation_status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-valid-voice-call",
+      "name": "Is Valid Voice Call?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [760, 300],
+      "notesInFlow": true,
+      "notes": "Esta decision separa llamadas con transcripcion de llamadas vacias."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/voice/intake",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "send-to-voice-api",
+      "name": "Send To Voice API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1020, 220],
+      "notesInFlow": true,
+      "notes": "Si la llamada esta bien, n8n la manda a mi API de Python para clasificarla y preparar la respuesta telefonica."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "voice-needs-human",
+              "leftValue": "={{ String($json.voice_call.handoff_required) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-human-handoff",
+      "name": "Needs Human Handoff?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1260, 220],
+      "notesInFlow": true,
+      "notes": "Aqui reviso si la llamada debe quedar para que un asesor la atienda."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparo una notificacion interna para que el asesor sepa que debe devolver o continuar la llamada.\nconst voiceCall = $json.voice_call ?? {};\nconst message = voiceCall.advisor_brief ?? `Llamada para revisar: ${voiceCall.caller_name ?? 'cliente por confirmar'}`;\n\nreturn [{\n  json: {\n    ...$json,\n    advisor_message: message,\n    priority: voiceCall.priority ?? 'medium',\n    channel: 'advisor_inbox',\n    lead: {\n      id: voiceCall.id,\n      quote_id: '',\n      full_name: voiceCall.caller_name,\n      phone: voiceCall.phone,\n      priority: voiceCall.priority ?? 'medium',\n      advisor_message: message,\n    },\n  }\n}];"
+      },
+      "id": "prepare-voice-notification",
+      "name": "Prepare Voice Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 140],
+      "notesInFlow": true,
+      "notes": "Esta caja arma el mensaje interno del asesor usando el resumen de la llamada."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/api/notifications",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "save-voice-notification",
+      "name": "Save Voice Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1740, 140],
+      "notesInFlow": true,
+      "notes": "Guarda la notificacion preparada. Despues esto puede cambiarse por WhatsApp, email o tarea en GoHighLevel."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'Invalid voice call', missing_fields: $json.missing_fields, messages: ($json.missing_fields || []).map((field) => 'Falta revisar: ' + field) }) }}"
+      },
+      "id": "invalid-voice-response",
+      "name": "Invalid Voice Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1020, 420],
+      "notesInFlow": true,
+      "notes": "Si no hay transcripcion, respondo con un error claro para saber que falta."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, voice_call_id: $json.voice_call.id, intent: $json.voice_call.intent, priority: $json.voice_call.priority, handoff_required: $json.voice_call.handoff_required, safe_voice_reply: $json.voice_call.safe_voice_reply, next_questions: $json.voice_call.next_questions, voice_call: $json.voice_call, notification: $json.notification }) }}"
+      },
+      "id": "success-voice-response",
+      "name": "Success Voice Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1980, 220],
+      "notesInFlow": true,
+      "notes": "Esta es la respuesta final del flujo de llamada simulada."
+    }
+  ],
+  "connections": {
+    "Webhook Electropatios Voice": {
+      "main": [[{ "node": "Validate Voice Call", "type": "main", "index": 0 }]]
+    },
+    "Validate Voice Call": {
+      "main": [[{ "node": "Is Valid Voice Call?", "type": "main", "index": 0 }]]
+    },
+    "Is Valid Voice Call?": {
+      "main": [
+        [{ "node": "Send To Voice API", "type": "main", "index": 0 }],
+        [{ "node": "Invalid Voice Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send To Voice API": {
+      "main": [[{ "node": "Needs Human Handoff?", "type": "main", "index": 0 }]]
+    },
+    "Needs Human Handoff?": {
+      "main": [
+        [{ "node": "Prepare Voice Notification", "type": "main", "index": 0 }],
+        [{ "node": "Success Voice Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Voice Notification": {
+      "main": [[{ "node": "Save Voice Notification", "type": "main", "index": 0 }]]
+    },
+    "Save Voice Notification": {
+      "main": [[{ "node": "Success Voice Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

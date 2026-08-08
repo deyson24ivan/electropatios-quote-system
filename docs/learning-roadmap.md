@@ -12,7 +12,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 4 - Lead Automation | Lista | Formulario -> n8n -> lead -> fila para Sheets -> notificacion interna. |
 | Fase 5 - CRM / GoHighLevel | Lista en modo seguro | Contacto, oportunidad, tags, pipeline y validacion sin enviar datos reales. |
 | Fase 6 - IA | Lista en modo seguro | Clasificacion, prompts, guardrails y paso a asesor humano sin modelo externo. |
-| Fase 7 - Voice AI | Pendiente | Agente telefonico para tomar o consultar pedidos. |
+| Fase 7 - Voice AI | Lista en modo seguro | Agente telefonico simulado con transcripcion, clasificacion, respuesta segura y handoff. |
 | Fase 8 - WordPress + hosting | Pendiente | Landing, formulario, dominio, DNS y SSL. |
 | Fase 9 - Tracking | Pendiente | Analytics, Tag Manager, Pixel y UTM. |
 | Fase 10 - Email infrastructure | Pendiente | SPF, DKIM, DMARC y entregabilidad. |
@@ -54,3 +54,9 @@ Herramientas: GoHighLevel, CRM, pipelines, oportunidades, tags, variables de ent
 Aprendi a usar IA de forma responsable dentro de una automatizacion. El sistema clasifica la intencion del cliente, detecta categoria de producto, aplica guardrails y prepara una respuesta segura con paso a asesor humano cuando hace falta.
 
 Herramientas: IA, prompts, clasificacion, guardrails, human handoff, n8n, pruebas automatizadas.
+
+## Fase 7 - Voice AI
+
+Aprendi la base de un agente telefonico sin conectar llamadas reales todavia. El sistema recibe una transcripcion, detecta intencion, producto, cantidad y urgencia, prepara una respuesta para telefono y deja un resumen para que un asesor continue.
+
+Herramientas: Voice AI, transcripciones, n8n, API REST, guardrails, human handoff, pruebas automatizadas.

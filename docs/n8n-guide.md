@@ -6,7 +6,7 @@ Esta guia cubre la Fase 3 del proyecto: usar n8n para recibir pedidos y conectar
 
 n8n es la herramienta que va en medio del negocio. En vez de que la pagina hable solo con Python, n8n puede recibir el pedido, decidir que hacer y conectarlo con otras herramientas.
 
-Flujo actual:
+Flujo actual de pedidos:
 
 ```text
 Pagina Electropatios
@@ -18,6 +18,17 @@ Pagina Electropatios
   -> Preparacion para Sheets
   -> CRM GoHighLevel en modo seguro
   -> Respuesta al cliente
+```
+
+Flujo actual de llamadas:
+
+```text
+Llamada simulada
+  -> Webhook n8n
+  -> Validacion en n8n
+  -> API Python /api/voice/intake
+  -> Respuesta telefonica segura
+  -> Notificacion interna si necesita asesor
 ```
 
 Mas adelante ese mismo flujo puede seguir hacia:
@@ -32,10 +43,11 @@ IA
 
 ## Archivo del workflow
 
-El workflow importable esta en:
+Los workflows importables estan en:
 
 ```text
 n8n/electropatios-order-workflow.json
+n8n/electropatios-voice-workflow.json
 ```
 
 ## Nodos del workflow
@@ -85,6 +97,8 @@ http://localhost:5678
 ```powershell
 npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-order-workflow.json
 npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-order-intake --active=true
+npx.cmd --yes n8n@2.33.5 import:workflow --input=n8n\electropatios-voice-workflow.json
+npx.cmd --yes n8n@2.33.5 update:workflow --id=electropatios-voice-intake --active=true
 ```
 
 Si n8n ya estaba abierto, se reinicia para que registre el webhook activo. No uses `N8N_USER_FOLDER` para este proyecto; la carpeta normal es `C:\Users\deyso\.n8n`.
@@ -97,6 +111,17 @@ Con la API de Python corriendo en `http://127.0.0.1:5000`, envia un ejemplo:
 $body = Get-Content -Raw "examples/requests/storefront-cart-order.json"
 Invoke-RestMethod `
   -Uri "http://127.0.0.1:5678/webhook/electropatios-order" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Para probar el webhook de Voice AI:
+
+```powershell
+$body = Get-Content -Raw "examples/requests/voice-call-cable-urgent.json"
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:5678/webhook/electropatios-voice-call" `
   -Method Post `
   -ContentType "application/json" `
   -Body $body
@@ -136,6 +161,8 @@ Si todo esta bien:
 }
 ```
 
+Si pruebas el workflow de voz, n8n deberia responder con `safe_voice_reply`, `intent`, `priority` y `handoff_required`.
+
 ## Como conectar la pagina con n8n
 
 La pagina ya quedo preparada para esto. En `frontend/script.js` hay una opcion llamada:
@@ -170,6 +197,18 @@ El webhook activo respondio correctamente con un pedido de carrito en la instala
 }
 ```
 
+El webhook de Voice AI tambien respondio correctamente:
+
+```json
+{
+  "ok": true,
+  "intent": "quote",
+  "priority": "high",
+  "handoff_required": true,
+  "safe_voice_reply": "Claro, Carlos. Dejo registrada tu solicitud de cable thhn. Un asesor de Electropatios confirma precio, disponibilidad y entrega antes de cerrar la cotizacion."
+}
+```
+
 ## Como lo explicaria en entrevista
 
-Use n8n como orquestador entre el formulario y la API. El formulario envia un pedido por webhook, n8n valida campos minimos, llama a una API REST propia, convierte la cotizacion en lead, clasifica el caso con IA segura, prepara la fila para Google Sheets, llama el modo seguro de GoHighLevel y guarda una notificacion interna si el pedido es urgente.
+Use n8n como orquestador entre el formulario, las llamadas simuladas y la API. El formulario envia un pedido por webhook, n8n valida campos minimos, llama a una API REST propia, convierte la cotizacion en lead, clasifica el caso con IA segura, prepara la fila para Google Sheets, llama el modo seguro de GoHighLevel y guarda una notificacion interna si el pedido es urgente. Para Voice AI, n8n recibe una transcripcion de llamada, llama a `/api/voice/intake` y devuelve una respuesta telefonica segura sin conectar telefonia real todavia.

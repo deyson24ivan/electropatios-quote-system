@@ -151,6 +151,41 @@ CREATE TABLE IF NOT EXISTS ai_safe_analyses (
   INDEX idx_ai_created_at (created_at)
 );
 
+-- Llamadas en modo seguro: simula un agente telefonico sin llamar proveedor de voz real.
+CREATE TABLE IF NOT EXISTS voice_call_intakes (
+  id CHAR(36) PRIMARY KEY,
+  mode VARCHAR(80) NOT NULL DEFAULT 'safe_mode',
+  status VARCHAR(80) NOT NULL DEFAULT 'voice_reply_prepared',
+  provider VARCHAR(80) NOT NULL DEFAULT 'local_simulator',
+  will_call_voice_provider BOOLEAN NOT NULL DEFAULT FALSE,
+  will_call_ai_model BOOLEAN NOT NULL DEFAULT FALSE,
+  caller_name VARCHAR(160) NULL,
+  phone VARCHAR(40) NULL,
+  email VARCHAR(190) NULL,
+  delivery_city VARCHAR(120) NULL,
+  transcript TEXT,
+  intent VARCHAR(80) NOT NULL DEFAULT 'unknown',
+  product_category VARCHAR(80) NOT NULL DEFAULT 'otros',
+  quantity INT UNSIGNED NOT NULL DEFAULT 0,
+  unit VARCHAR(40) NOT NULL DEFAULT 'unidad',
+  urgency VARCHAR(60) NOT NULL DEFAULT 'esta_semana',
+  priority ENUM('high', 'medium', 'low') NOT NULL DEFAULT 'low',
+  confidence VARCHAR(40) NOT NULL DEFAULT 'low',
+  handoff_required BOOLEAN NOT NULL DEFAULT TRUE,
+  handoff_reason VARCHAR(120) NOT NULL DEFAULT 'faltan_datos',
+  safe_voice_reply TEXT,
+  guardrails_json JSON NULL,
+  next_questions_json JSON NULL,
+  voice_lead_draft_json JSON NULL,
+  advisor_brief TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_voice_phone (phone),
+  INDEX idx_voice_intent (intent),
+  INDEX idx_voice_priority (priority),
+  INDEX idx_voice_handoff (handoff_required),
+  INDEX idx_voice_created_at (created_at)
+);
+
 -- Tabla de errores: ayuda a revisar fallos de automatizaciones.
 CREATE TABLE IF NOT EXISTS automation_errors (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

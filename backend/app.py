@@ -13,11 +13,13 @@ try:
     from .ghl_logic import build_crm_sync_record
     from .lead_logic import build_lead_record, build_notification
     from .quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
+    from .voice_logic import build_voice_call_record
 except ImportError:
     from ai_logic import build_ai_analysis
     from ghl_logic import build_crm_sync_record
     from lead_logic import build_lead_record, build_notification
     from quote_logic import ERROR_MESSAGES, PRODUCT_CATEGORIES, build_quote_record
+    from voice_logic import build_voice_call_record
 
 
 # Rutas principales del proyecto. Todo lo que se guarda localmente queda en backend/data.
@@ -28,6 +30,7 @@ LEADS_FILE = DATA_DIR / "leads.jsonl"
 NOTIFICATIONS_FILE = DATA_DIR / "notifications.jsonl"
 CRM_SYNCS_FILE = DATA_DIR / "crm_syncs.jsonl"
 AI_ANALYSES_FILE = DATA_DIR / "ai_analyses.jsonl"
+VOICE_CALLS_FILE = DATA_DIR / "voice_calls.jsonl"
 ERRORS_FILE = DATA_DIR / "automation_errors.jsonl"
 
 app = Flask(__name__)
@@ -110,6 +113,11 @@ def read_local_crm_syncs() -> list[dict[str, Any]]:
 # Lee las respuestas y clasificaciones de IA guardadas en modo seguro.
 def read_local_ai_analyses() -> list[dict[str, Any]]:
     return read_jsonl(AI_ANALYSES_FILE)
+
+
+# Lee las llamadas simuladas del agente telefonico en modo seguro.
+def read_local_voice_calls() -> list[dict[str, Any]]:
+    return read_jsonl(VOICE_CALLS_FILE)
 
 
 # Busca si ya existe una solicitud exactamente igual en el respaldo local.
@@ -382,6 +390,46 @@ def save_mysql_ai_analysis(analysis: dict[str, Any]) -> None:
         connection.commit()
 
 
+# Guarda una llamada del agente telefonico. En esta fase solo es simulacion segura.
+def save_mysql_voice_call(call: dict[str, Any]) -> None:
+    call_for_mysql = {
+        **call,
+        "will_call_voice_provider": bool(call.get("will_call_voice_provider")),
+        "will_call_ai_model": bool(call.get("will_call_ai_model")),
+        "handoff_required": bool(call.get("handoff_required")),
+        "guardrails_json": json.dumps(call.get("guardrails", []), ensure_ascii=True),
+        "next_questions_json": json.dumps(call.get("next_questions", []), ensure_ascii=True),
+        "voice_lead_draft_json": json.dumps(call.get("voice_lead_draft", {}), ensure_ascii=True),
+        "created_at": mysql_datetime(call.get("created_at")),
+    }
+    with mysql_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO voice_call_intakes (
+                id, mode, status, provider, will_call_voice_provider,
+                will_call_ai_model, caller_name, phone, email, delivery_city,
+                transcript, intent, product_category, quantity, unit, urgency,
+                priority, confidence, handoff_required, handoff_reason,
+                safe_voice_reply, guardrails_json, next_questions_json,
+                voice_lead_draft_json, advisor_brief, created_at
+            )
+            VALUES (
+                %(id)s, %(mode)s, %(status)s, %(provider)s,
+                %(will_call_voice_provider)s, %(will_call_ai_model)s,
+                %(caller_name)s, %(phone)s, %(email)s, %(delivery_city)s,
+                %(transcript)s, %(intent)s, %(product_category)s, %(quantity)s,
+                %(unit)s, %(urgency)s, %(priority)s, %(confidence)s,
+                %(handoff_required)s, %(handoff_reason)s, %(safe_voice_reply)s,
+                %(guardrails_json)s, %(next_questions_json)s,
+                %(voice_lead_draft_json)s, %(advisor_brief)s, %(created_at)s
+            )
+            """,
+            call_for_mysql,
+        )
+        connection.commit()
+
+
 # Decide donde guardar: primero intenta MySQL; si falla, usa archivo local.
 def save_quote(quote: dict[str, Any]) -> dict[str, Any]:
     if mysql_configured():
@@ -498,6 +546,26 @@ def save_ai_analysis(analysis: dict[str, Any]) -> str:
     return "local_jsonl"
 
 
+# Guarda la llamada segura para revisarla despues o convertirla en tarea comercial.
+def save_voice_call(call: dict[str, Any]) -> str:
+    if mysql_configured():
+        try:
+            save_mysql_voice_call(call)
+            return "mysql"
+        except Exception as exc:
+            append_jsonl(
+                ERRORS_FILE,
+                {
+                    "error": str(exc),
+                    "fallback": "local_jsonl",
+                    "voice_call": call,
+                },
+            )
+
+    append_jsonl(VOICE_CALLS_FILE, call)
+    return "local_jsonl"
+
+
 # Flujo completo del formulario: recibe, valida, guarda y responde.
 def handle_quote_request():
     payload = request.get_json(silent=True) or {}
@@ -569,6 +637,18 @@ def handle_ai_request():
 
     storage = save_ai_analysis(analysis)
     return jsonify({"ok": True, **payload, "ai_analysis_storage": storage, "ai_analysis": analysis}), 201
+
+
+# Recibe una transcripcion de llamada y prepara respuesta telefonica segura.
+def handle_voice_call_request():
+    payload = request.get_json(silent=True) or {}
+    call, errors = build_voice_call_record(payload)
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors, "voice_call": call}), 400
+
+    storage = save_voice_call(call)
+    return jsonify({"ok": True, **payload, "voice_call_storage": storage, "voice_call": call}), 201
 
 
 # Endpoint sencillo para revisar si la API esta viva.
@@ -689,6 +769,25 @@ def list_ai_analyses():
         return jsonify({"ok": False, "error": "invalid admin token"}), 401
 
     return jsonify({"ok": True, "ai_analyses": read_local_ai_analyses()})
+
+
+@app.route("/api/voice/intake", methods=["OPTIONS"])
+def voice_intake_options():
+    return "", 204
+
+
+@app.route("/api/voice/intake", methods=["POST"])
+def create_voice_call():
+    return handle_voice_call_request()
+
+
+@app.route("/api/voice/calls", methods=["GET"])
+def list_voice_calls():
+    expected_token = os.getenv("ADMIN_TOKEN")
+    if expected_token and request.args.get("token") != expected_token:
+        return jsonify({"ok": False, "error": "invalid admin token"}), 401
+
+    return jsonify({"ok": True, "voice_calls": read_local_voice_calls()})
 
 
 if __name__ == "__main__":

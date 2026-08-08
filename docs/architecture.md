@@ -27,6 +27,10 @@ flowchart TD
   Q --> R["Fila lista para Sheets"]
   Q --> S["GoHighLevel modo seguro"]
   Q --> T["Notificacion interna"]
+  U["Llamada simulada"] --> V["Webhook electropatios-voice-call"]
+  V --> W["POST /api/voice/intake"]
+  W --> X["Respuesta telefonica segura"]
+  W --> T
 ```
 
 ## Contrato de datos
@@ -62,6 +66,8 @@ flowchart TD
 - Convertir la cotizacion en lead comercial para seguimiento.
 - Preparar datos para Sheets y GoHighLevel sin enviar datos reales todavia.
 - Clasificar intencion con IA segura y pasar a asesor cuando falte informacion confirmada.
+- Simular llamadas telefonicas desde una transcripcion y preparar una respuesta segura para el cliente.
+- No confirmar precios, stock, entregas ni recomendaciones electricas tecnicas durante una llamada automatizada.
 
 ## Catalogo base
 
@@ -76,10 +82,24 @@ La API expone `GET /api/catalog` con categorias iniciales:
 
 ## Guardrails para IA
 
-Cuando agreguemos el agente IA, no debe inventar precios, disponibilidad o marcas. Debe responder solo con informacion disponible en catalogo, inventario o reglas cargadas.
+El agente IA no debe inventar precios, disponibilidad o marcas. Debe responder solo con informacion disponible en catalogo, inventario o reglas cargadas.
 
 Si el cliente pregunta algo que no esta documentado, la respuesta esperada es:
 
 > No tengo esa informacion confirmada. Puedo registrar la pregunta para que un asesor de Electropatios la revise.
 
 Esta regla es importante para explicar en entrevista como se reducen alucinaciones.
+
+## Voice AI en modo seguro
+
+El agente telefonico de esta fase no hace llamadas reales. Recibe una transcripcion por JSON, detecta si el cliente quiere cotizar, preguntar disponibilidad o pedir asesoria tecnica, y prepara una respuesta corta para telefono.
+
+Lo importante de esta fase es aprender el flujo:
+
+1. Entra una llamada o transcripcion.
+2. n8n valida que exista texto.
+3. La API clasifica intencion, producto, cantidad, urgencia y prioridad.
+4. La API prepara una respuesta segura.
+5. Si hace falta asesor, se guarda una notificacion interna.
+
+Cuando exista proveedor real, esta misma estructura se puede conectar a Twilio, GoHighLevel Phone, ElevenLabs o un modelo de voz.
