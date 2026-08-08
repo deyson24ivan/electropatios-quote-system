@@ -2,6 +2,10 @@ const TRACKING_API_URL = "http://127.0.0.1:5000/api/tracking/events";
 const TRACKING_SESSION_KEY = "electropatios_tracking_session";
 const TRACKING_QUEUE_KEY = "electropatios_tracking_queue";
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+const IS_LOCAL_TRACKING =
+  window.location.protocol === "file:" ||
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
 
 // Esta funcion crea un id sencillo para reconocer la visita actual.
 function trackingId() {
@@ -35,8 +39,8 @@ function getAttribution() {
   const utm = getUtmParams();
   return {
     ...utm,
-    source: utm.utm_source || "direct_local",
-    medium: utm.utm_medium || "local",
+    source: utm.utm_source || (IS_LOCAL_TRACKING ? "direct_local" : "direct_online"),
+    medium: utm.utm_medium || (IS_LOCAL_TRACKING ? "local" : "portfolio"),
     campaign: utm.utm_campaign || "sin_campana",
   };
 }
@@ -80,6 +84,13 @@ function buildEvent(eventName, metadata = {}) {
 
 // Envia el evento a la API. Si falla, lo deja en cola local.
 async function sendTrackingEvent(event) {
+  if (!IS_LOCAL_TRACKING) {
+    const queue = readTrackingQueue();
+    queue.push({ ...event, mode: "online_demo" });
+    saveTrackingQueue(queue);
+    return;
+  }
+
   try {
     const response = await fetch(TRACKING_API_URL, {
       method: "POST",
@@ -101,6 +112,8 @@ async function sendTrackingEvent(event) {
 
 // Intenta mandar eventos que quedaron pendientes si antes la API estaba apagada.
 async function flushTrackingQueue() {
+  if (!IS_LOCAL_TRACKING) return;
+
   const queue = readTrackingQueue();
   if (!queue.length) return;
 

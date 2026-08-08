@@ -16,7 +16,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 8 - WordPress + hosting | Lista version local | Pagina local completa; pendiente WordPress real, dominio, DNS y SSL. |
 | Fase 9 - Tracking | Lista en modo local | Eventos, conversiones y UTM sin conectar herramientas externas. |
 | Fase 10 - Email infrastructure | Lista en modo seguro | Plan SPF, DKIM, DMARC y entregabilidad sin tocar DNS reales. |
-| Fase 11 - Deploy | Pendiente | API y pagina publicadas online. |
+| Fase 11 - Deploy | Lista version GitHub Pages | Pagina online como demo de portafolio; API y n8n siguen locales. |
 | Fase 12 - Portfolio | Pendiente | README final, diagramas, capturas y demo. |
 
 ## Fase 1 - Git/GitHub
@@ -78,3 +78,9 @@ Herramientas: eventos, conversiones, UTM, tracking local, JavaScript, API REST, 
 Aprendi la base tecnica para que un dominio pueda mandar correos con mejor reputacion. El sistema prepara un plan de SPF, DKIM y DMARC, valida el dominio y deja advertencias antes de publicar cualquier registro real.
 
 Herramientas: DNS, SPF, DKIM, DMARC, entregabilidad, reputacion de dominio, modo seguro, API REST y pruebas automatizadas.
+
+## Fase 11 - Deploy
+
+Aprendi a publicar la parte visible del proyecto sin pagar hosting todavia. La pagina estatica se despliega con GitHub Pages desde la rama `main`. Como la API y n8n siguen locales, la pagina detecta cuando esta online y usa modo demo para no depender de `localhost`.
+
+Herramientas: GitHub Pages, deploy estatico, entorno local vs entorno online, modo demo seguro.

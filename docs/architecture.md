@@ -75,6 +75,7 @@ flowchart TD
 - Mantener una pagina local completa con catalogo, carrito, formulario, servicios, preguntas y contacto.
 - Medir eventos de pagina y UTM en modo local antes de conectar Analytics real.
 - Preparar infraestructura email en modo seguro antes de tocar DNS, dominio o envios reales.
+- Publicar la pagina como demo de portafolio sin exponer API, n8n ni datos reales.
 
 ## Catalogo base
 
@@ -138,3 +139,9 @@ Esta fase prepara los registros que un dominio necesita para mandar correos con 
 - DMARC: define que hacer si un correo falla autenticacion.
 
 La API genera el plan con `POST /api/email/dns-plan`. No cambia DNS reales. Eso es importante porque un registro mal publicado puede afectar correos de la empresa.
+
+## Deploy de portafolio
+
+La primera version online publica solo `frontend/` en GitHub Pages. Esto permite mostrar la pagina sin pagar hosting y sin abrir servicios locales al internet.
+
+Cuando la pagina corre en el computador, el formulario usa n8n/API. Cuando corre en GitHub Pages, usa modo demo online y guarda la solicitud en el navegador. Asi la experiencia no falla aunque `localhost` no exista para visitantes externos.

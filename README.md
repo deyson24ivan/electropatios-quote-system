@@ -19,6 +19,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Voice AI en modo seguro para simular llamadas, entender pedidos y preparar respuesta telefonica.
 - Tracking local con eventos, UTM y conversiones antes de conectar Analytics real.
 - Infraestructura email en modo seguro para preparar SPF, DKIM, DMARC y entregabilidad.
+- Deploy de portafolio con GitHub Pages desde la rama `main`.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -29,6 +30,8 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 
 ```text
 electropatios-quote-system/
+|-- index.html
+|-- .nojekyll
 |-- backend/
 |   |-- app.py
 |   |-- ai_logic.py
@@ -52,6 +55,7 @@ electropatios-quote-system/
 |   `-- requests/
 |-- docs/
 |   |-- architecture.md
+|   |-- deploy-guide.md
 |   |-- api-guide.md
 |   |-- ai-safe-mode-guide.md
 |   |-- gohighlevel-safe-mode-guide.md
@@ -160,6 +164,12 @@ Para entender SPF, DKIM, DMARC y entregabilidad, revisa:
 docs/email-infrastructure-guide.md
 ```
 
+Para entender el deploy de portafolio con GitHub Pages, revisa:
+
+```text
+docs/deploy-guide.md
+```
+
 Para entender la pagina local y como se relaciona con WordPress, revisa:
 
 ```text
@@ -176,6 +186,12 @@ La instalacion local actual de n8n usa `npx`, version `2.33.5`, con datos en:
 
 ```text
 C:\Users\deyso\.n8n
+```
+
+La pagina de portafolio se publica con GitHub Pages desde `main / root`. El archivo raiz `index.html` abre la pagina real de `frontend/`. Cuando el deploy termine, la URL esperada es:
+
+```text
+https://deyson24ivan.github.io/electropatios-quote-system/
 ```
 
 ## Primer flujo objetivo
@@ -205,4 +221,4 @@ flowchart LR
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM, prepara sincronizacion CRM y genera un plan seguro de SPF, DKIM y DMARC sin enviar datos reales.
+Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM, prepara sincronizacion CRM, genera un plan seguro de SPF, DKIM y DMARC, y publica una demo de portafolio en GitHub Pages.

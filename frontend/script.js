@@ -13,10 +13,15 @@ const resultCard = document.querySelector("#result-card");
 const catalogCount = document.querySelector("#catalog-count");
 
 // Aqui decido por donde se envia el pedido.
-// Lo normal es pasar por n8n porque estamos practicando automatizaciones.
-const USE_N8N_WEBHOOK = true;
+// En mi PC uso n8n/API. En GitHub Pages uso modo demo para que no falle por localhost.
 const API_URL = "http://localhost:5000/api/quotes";
 const N8N_WEBHOOK_URL = "http://127.0.0.1:5678/webhook/electropatios-order";
+const DEMO_ORDERS_STORAGE_KEY = "electropatios_demo_orders";
+const IS_LOCAL_DEVELOPMENT =
+  window.location.protocol === "file:" ||
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const USE_N8N_WEBHOOK = IS_LOCAL_DEVELOPMENT;
 const ORDER_URL = USE_N8N_WEBHOOK ? N8N_WEBHOOK_URL : API_URL;
 const CART_STORAGE_KEY = "electropatios_cart";
 
@@ -28,8 +33,8 @@ function track(eventName, metadata = {}) {
 function trackingAttribution() {
   if (!window.ElectropatiosTracking) {
     return {
-      source: "direct_local",
-      medium: "local",
+      source: IS_LOCAL_DEVELOPMENT ? "direct_local" : "direct_online",
+      medium: IS_LOCAL_DEVELOPMENT ? "local" : "portfolio",
       campaign: "sin_campana",
     };
   }
@@ -429,19 +434,109 @@ async function parseResponse(response) {
   }
 }
 
+function localId(prefix) {
+  if (window.crypto && window.crypto.randomUUID) {
+    return `${prefix}_${window.crypto.randomUUID()}`;
+  }
+  return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function readDemoOrders() {
+  try {
+    const orders = JSON.parse(localStorage.getItem(DEMO_ORDERS_STORAGE_KEY) || "[]");
+    return Array.isArray(orders) ? orders : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveDemoOrder(order) {
+  const orders = readDemoOrders();
+  orders.push(order);
+  localStorage.setItem(DEMO_ORDERS_STORAGE_KEY, JSON.stringify(orders.slice(-25)));
+}
+
+// Esta prioridad demo se parece a la del backend para que la pagina online se sienta completa.
+function demoPriority(payload) {
+  const budget = Number(String(payload.budget || "").replace(/\D/g, "")) || 0;
+  const urgent = ["hoy", "24h"].includes(payload.urgency);
+  const businessCustomer = ["empresa", "ferreteria", "constructora", "tecnico_electricista"].includes(
+    payload.customer_type
+  );
+  const highValue = budget >= 2000000 || payload.quantity >= 100;
+
+  if (urgent || highValue || (businessCustomer && payload.quantity >= 10)) {
+    return "high";
+  }
+  if (payload.quantity >= 10 || businessCustomer || budget >= 500000) {
+    return "medium";
+  }
+  return "low";
+}
+
+// En GitHub Pages no hay servidor. Guardo una respuesta local para que la demo no quede rota.
+function createDemoOrderResponse(payload) {
+  const now = new Date().toISOString();
+  const priority = demoPriority(payload);
+  const quote = {
+    id: localId("quote_demo"),
+    full_name: payload.full_name,
+    email: payload.email,
+    phone: payload.phone,
+    product_category: payload.product_category,
+    quantity: payload.quantity,
+    priority,
+    status: "demo_prepared",
+    items: payload.items,
+    created_at: now,
+  };
+  const lead = {
+    id: localId("lead_demo"),
+    quote_id: quote.id,
+    full_name: payload.full_name,
+    priority,
+    pipeline_stage: priority === "high" ? "contactar_hoy" : "revisar_y_cotizar",
+    created_at: now,
+  };
+
+  const order = {
+    demo_mode: true,
+    quote,
+    lead,
+    payload,
+  };
+  saveDemoOrder(order);
+
+  return {
+    ok: true,
+    demo_mode: true,
+    duplicate: false,
+    storage: "browser_local_demo",
+    quote,
+    lead,
+  };
+}
+
 // Muestra confirmacion cuando el pedido fue recibido por la API o por n8n.
 function renderSuccess(response) {
   const quote = response.quote || {};
   const lead = response.lead || {};
-  const title = response.duplicate ? "Ya recibimos un pedido parecido" : "Pedido enviado";
+  let title = "Pedido enviado";
+  if (response.demo_mode) {
+    title = "Pedido preparado";
+  } else if (response.duplicate) {
+    title = "Ya recibimos un pedido parecido";
+  }
   const priority = lead.priority || response.priority || quote.priority || "pendiente";
+  const message = response.demo_mode
+    ? "La solicitud quedo guardada en esta demo online. En la version local se envia al flujo de Electropatios para seguimiento."
+    : "Un asesor de Electropatios revisara precio, disponibilidad y entrega para contactarte.";
 
   resultCard.innerHTML = `
     <h2>${title}</h2>
     <p>
       Recibimos tu solicitud con ${quote.quantity || cart.length} producto(s).
-      Prioridad: ${priority}. Un asesor de Electropatios revisara precio,
-      disponibilidad y entrega para contactarte.
+      Prioridad: ${priority}. ${message}
     </p>
   `;
   resultCard.classList.add("visible");
@@ -532,6 +627,24 @@ form.addEventListener("submit", async (event) => {
 
   try {
     const payload = formToPayload(form);
+    if (!IS_LOCAL_DEVELOPMENT) {
+      const body = createDemoOrderResponse(payload);
+      track("quote_submit_success", {
+        quote_id: body.quote.id,
+        lead_id: body.lead.id,
+        priority: body.lead.priority,
+        duplicate: false,
+        source: payload.source,
+        campaign: payload.tracking.campaign,
+        mode: "online_demo",
+      });
+      renderSuccess(body);
+      form.reset();
+      clearCart(false);
+      cartDrawer.classList.remove("open");
+      return;
+    }
+
     const response = await fetch(ORDER_URL, {
       method: "POST",
       headers: {
