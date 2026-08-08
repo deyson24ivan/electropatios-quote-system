@@ -7,6 +7,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 ## Que demuestra este proyecto
 
 - Pagina web con formulario real de cotizacion.
+- Pagina local completa con inicio, catalogo, servicios, preguntas y contacto.
 - Catalogo con productos, categorias, buscador y pedido tipo carrito.
 - API REST en Python para recibir solicitudes comerciales.
 - Validacion de datos antes de guardar o automatizar.
@@ -51,6 +52,7 @@ electropatios-quote-system/
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
 |   |-- voice-ai-safe-mode-guide.md
+|   |-- wordpress-local-web-guide.md
 |   |-- learning-roadmap.md
 |   `-- workflows/
 |       |-- quote-workflow.md
@@ -137,6 +139,12 @@ Para entender el agente telefonico seguro, revisa:
 docs/voice-ai-safe-mode-guide.md
 ```
 
+Para entender la pagina local y como se relaciona con WordPress, revisa:
+
+```text
+docs/wordpress-local-web-guide.md
+```
+
 Cuando n8n este corriendo, su editor local queda en:
 
 ```text
@@ -173,4 +181,4 @@ flowchart LR
 
 ## Frase de portafolio
 
-Construyo un sistema de automatizacion comercial para Electropatios donde un cliente solicita cotizaciones de materiales electricos, la API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI y prepara sincronizacion CRM sin enviar datos reales.
+Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI y prepara sincronizacion CRM sin enviar datos reales.

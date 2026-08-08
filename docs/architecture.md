@@ -6,31 +6,32 @@ Este proyecto esta disenado como una plataforma de cotizaciones para Electropati
 
 ```mermaid
 flowchart TD
-  A["Cliente entra a la pagina"] --> B["Solicita cotizacion o asesoria"]
-  B --> C{"Ruta del pedido"}
-  C -- "Modo local" --> D["POST /api/quotes"]
-  C -- "Modo n8n" --> E["Webhook electropatios-order"]
-  E --> F["Validacion en n8n"]
-  F --> D
-  D --> G{"Datos validos?"}
-  G -- "No" --> H["Respuesta 400 con errores"]
-  G -- "Si" --> I{"Solicitud repetida?"}
-  I -- "Si" --> J["Retorna solicitud existente"]
-  I -- "No" --> K["Guarda en MySQL"]
-  K --> L{"MySQL disponible?"}
-  L -- "No" --> M["Respaldo local JSONL"]
-  L -- "Si" --> N["Evento quote_request_created"]
-  M --> O["Prioridad high/medium/low"]
-  N --> O
-  O --> P["POST /api/leads"]
-  P --> Q["IA modo seguro"]
-  Q --> R["Fila lista para Sheets"]
-  Q --> S["GoHighLevel modo seguro"]
-  Q --> T["Notificacion interna"]
-  U["Llamada simulada"] --> V["Webhook electropatios-voice-call"]
-  V --> W["POST /api/voice/intake"]
-  W --> X["Respuesta telefonica segura"]
-  W --> T
+  A["Cliente entra a la pagina local"] --> B["Busca productos y arma carrito"]
+  B --> C["Solicita cotizacion o asesoria"]
+  C --> D{"Ruta del pedido"}
+  D -- "Modo local" --> E["POST /api/quotes"]
+  D -- "Modo n8n" --> F["Webhook electropatios-order"]
+  F --> G["Validacion en n8n"]
+  G --> E
+  E --> H{"Datos validos?"}
+  H -- "No" --> I["Respuesta 400 con errores"]
+  H -- "Si" --> J{"Solicitud repetida?"}
+  J -- "Si" --> K["Retorna solicitud existente"]
+  J -- "No" --> L["Guarda en MySQL"]
+  L --> M{"MySQL disponible?"}
+  M -- "No" --> N["Respaldo local JSONL"]
+  M -- "Si" --> O["Evento quote_request_created"]
+  N --> P["Prioridad high/medium/low"]
+  O --> P
+  P --> Q["POST /api/leads"]
+  Q --> R["IA modo seguro"]
+  R --> S["Fila lista para Sheets"]
+  R --> T["GoHighLevel modo seguro"]
+  R --> U["Notificacion interna"]
+  V["Llamada simulada"] --> W["Webhook electropatios-voice-call"]
+  W --> X["POST /api/voice/intake"]
+  X --> Y["Respuesta telefonica segura"]
+  X --> U
 ```
 
 ## Contrato de datos
@@ -68,6 +69,7 @@ flowchart TD
 - Clasificar intencion con IA segura y pasar a asesor cuando falte informacion confirmada.
 - Simular llamadas telefonicas desde una transcripcion y preparar una respuesta segura para el cliente.
 - No confirmar precios, stock, entregas ni recomendaciones electricas tecnicas durante una llamada automatizada.
+- Mantener una pagina local completa con catalogo, carrito, formulario, servicios, preguntas y contacto.
 
 ## Catalogo base
 

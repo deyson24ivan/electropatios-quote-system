@@ -8,95 +8,147 @@ const drawerItems = document.querySelector("#drawer-items");
 const cartDrawer = document.querySelector("#cart-drawer");
 const cartToggle = document.querySelector("#cart-toggle");
 const closeCart = document.querySelector("#close-cart");
+const clearCartButton = document.querySelector("#clear-cart");
 const resultCard = document.querySelector("#result-card");
+const catalogCount = document.querySelector("#catalog-count");
 
 // Aqui decido por donde se envia el pedido.
-// Ahora los pedidos pasan primero por n8n para practicar automatizaciones.
-// Si n8n esta apagado, se puede volver a false para mandar directo a Python.
+// Lo normal es pasar por n8n porque estamos practicando automatizaciones.
 const USE_N8N_WEBHOOK = true;
 const API_URL = "http://localhost:5000/api/quotes";
 const N8N_WEBHOOK_URL = "http://127.0.0.1:5678/webhook/electropatios-order";
 const ORDER_URL = USE_N8N_WEBHOOK ? N8N_WEBHOOK_URL : API_URL;
+const CART_STORAGE_KEY = "electropatios_cart";
 
-// Catalogo inicial escrito en JavaScript para practicar.
-// Despues puede venir de MySQL, Google Sheets o un inventario real.
+// Catalogo local de la pagina. Despues puede salir de MySQL, Sheets o un inventario real.
 const products = [
   {
     sku: "LAM-LED-18W",
     name: "Panel LED 18W redondo",
     category: "lamparas",
     unit: "unidad",
-    detail: "Para cielo raso, luz blanca o calida segun disponibilidad.",
+    detail: "Panel para cielo raso en espacios residenciales y locales comerciales.",
+    highlights: ["Luz blanca o calida", "Marco blanco", "Instalacion empotrada"],
   },
   {
     sku: "LAM-REF-50W",
     name: "Reflector LED 50W",
     category: "lamparas",
     unit: "unidad",
-    detail: "Uso exterior, ideal para fachadas, patios y bodegas.",
+    detail: "Reflector para fachadas, patios, bodegas y zonas exteriores.",
+    highlights: ["Uso exterior", "Alta iluminacion", "Ideal para seguridad"],
+  },
+  {
+    sku: "LAM-BOM-12W",
+    name: "Bombillo LED 12W",
+    category: "lamparas",
+    unit: "unidad",
+    detail: "Bombillo LED para reemplazo rapido en hogares y negocios.",
+    highlights: ["Rosca estandar", "Bajo consumo", "Luz diaria"],
   },
   {
     sku: "CAB-THHN-12",
     name: "Cable THHN #12",
     category: "cable",
     unit: "metro",
-    detail: "Cable de cobre para instalaciones electricas residenciales.",
+    detail: "Cable de cobre para instalaciones electricas residenciales y comerciales.",
+    highlights: ["Por metro", "Uso interno", "Calibre comun"],
+  },
+  {
+    sku: "CAB-THHN-10",
+    name: "Cable THHN #10",
+    category: "cable",
+    unit: "metro",
+    detail: "Cable para circuitos que requieren mayor capacidad, segun revision tecnica.",
+    highlights: ["Por metro", "Cobre", "Para circuitos dedicados"],
   },
   {
     sku: "CAB-DUP-2X12",
     name: "Cable duplex 2x12",
     category: "cable",
     unit: "metro",
-    detail: "Cable flexible para conexiones y extensiones.",
+    detail: "Cable flexible para conexiones, extensiones y trabajos de mantenimiento.",
+    highlights: ["Flexible", "Venta por metro", "Uso residencial"],
   },
   {
     sku: "TUB-PVC-12",
     name: "Tuberia PVC 1/2 pulgada",
     category: "tuberia",
-    unit: "unidad",
-    detail: "Tuberia para canalizacion de cableado electrico.",
+    unit: "tubo",
+    detail: "Tuberia para canalizar cableado en muros, techos y puntos electricos.",
+    highlights: ["PVC", "Canalizacion", "Accesorios compatibles"],
+  },
+  {
+    sku: "TUB-PVC-34",
+    name: "Tuberia PVC 3/4 pulgada",
+    category: "tuberia",
+    unit: "tubo",
+    detail: "Tuberia para canalizaciones con mayor espacio de cableado.",
+    highlights: ["PVC", "Mayor diametro", "Obra y mantenimiento"],
   },
   {
     sku: "TUB-EMT-34",
     name: "Tuberia EMT 3/4 pulgada",
     category: "tuberia",
-    unit: "unidad",
-    detail: "Tuberia metalica para instalaciones visibles o industriales.",
+    unit: "tubo",
+    detail: "Tuberia metalica para instalaciones visibles o comerciales.",
+    highlights: ["Metalica", "Instalacion visible", "Mayor resistencia"],
   },
   {
     sku: "CON-REG-12P",
     name: "Regleta de conexion 12 polos",
     category: "conectores",
     unit: "unidad",
-    detail: "Conector para derivaciones y empalmes ordenados.",
+    detail: "Conector para derivaciones y empalmes organizados.",
+    highlights: ["12 polos", "Conexion ordenada", "Uso en cajas"],
+  },
+  {
+    sku: "CON-TER-AZ",
+    name: "Terminal azul tipo pala",
+    category: "conectores",
+    unit: "paquete",
+    detail: "Terminal para conexiones limpias en tableros y equipos.",
+    highlights: ["Paquete", "Conexion firme", "Trabajo tecnico"],
   },
   {
     sku: "CON-CAJA-2X4",
     name: "Caja 2x4 para toma",
     category: "conectores",
     unit: "unidad",
-    detail: "Caja para tomacorrientes e interruptores.",
+    detail: "Caja para instalar tomacorrientes, interruptores o tapas.",
+    highlights: ["Formato 2x4", "Para muro", "Uso comun"],
   },
   {
     sku: "PRO-BRK-20A",
     name: "Breaker 20A",
     category: "proteccion",
     unit: "unidad",
-    detail: "Proteccion para circuitos residenciales.",
+    detail: "Proteccion para circuitos residenciales, segun revision del caso.",
+    highlights: ["20 amperios", "Proteccion", "Requiere seleccion tecnica"],
   },
   {
     sku: "PRO-TOMA-DOBLE",
     name: "Tomacorriente doble",
     category: "proteccion",
     unit: "unidad",
-    detail: "Toma doble para uso residencial o comercial.",
+    detail: "Toma doble para hogares, locales y oficinas.",
+    highlights: ["Doble salida", "Color blanco", "Uso interior"],
+  },
+  {
+    sku: "PRO-TABL-8C",
+    name: "Tablero 8 circuitos",
+    category: "proteccion",
+    unit: "unidad",
+    detail: "Tablero para distribuir y proteger circuitos electricos.",
+    highlights: ["8 circuitos", "Distribucion", "Para proyectos"],
   },
   {
     sku: "HER-CINTA",
     name: "Cinta aislante",
     category: "herramientas",
     unit: "unidad",
-    detail: "Accesorio basico para terminaciones electricas.",
+    detail: "Consumible basico para terminaciones y trabajos electricos.",
+    highlights: ["Negra", "Uso general", "Alta rotacion"],
   },
   {
     sku: "HER-MULT",
@@ -104,6 +156,15 @@ const products = [
     category: "herramientas",
     unit: "unidad",
     detail: "Herramienta para medicion y revision de circuitos.",
+    highlights: ["Digital", "Medicion basica", "Para tecnicos"],
+  },
+  {
+    sku: "HER-GUIA-15M",
+    name: "Guia pasacable 15 m",
+    category: "herramientas",
+    unit: "unidad",
+    detail: "Guia para pasar cable en tuberia y canalizaciones.",
+    highlights: ["15 metros", "Flexible", "Instalacion"],
   },
 ];
 
@@ -118,7 +179,22 @@ const categoryLabels = {
 };
 
 let selectedCategory = "todos";
-let cart = [];
+let cart = readCart();
+
+// Recupera el carrito si el cliente recarga la pagina.
+function readCart() {
+  try {
+    const storedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
+    return Array.isArray(storedCart) ? storedCart : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+// Guarda el carrito en el navegador para no perder el pedido al recargar.
+function saveCart() {
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+}
 
 // Dibuja los botones de categorias del catalogo.
 function renderCategoryTabs() {
@@ -133,29 +209,44 @@ function renderCategoryTabs() {
     .join("");
 }
 
-// Muestra los productos segun categoria y busqueda.
-function renderProducts() {
+// Decide que productos se muestran con categoria y busqueda.
+function visibleProducts() {
   const search = searchInput.value.trim().toLowerCase();
-  const visibleProducts = products.filter((product) => {
+  return products.filter((product) => {
     const matchesCategory = selectedCategory === "todos" || product.category === selectedCategory;
-    const matchesSearch = [product.name, product.sku, product.detail, product.category]
+    const matchesSearch = [product.name, product.sku, product.detail, product.category, ...product.highlights]
       .join(" ")
       .toLowerCase()
       .includes(search);
     return matchesCategory && matchesSearch;
   });
+}
 
-  productGrid.innerHTML = visibleProducts
+// Muestra los productos como tarjetas con datos comerciales claros.
+function renderProducts() {
+  const filteredProducts = visibleProducts();
+  catalogCount.textContent = `${filteredProducts.length} producto${filteredProducts.length === 1 ? "" : "s"} disponible${
+    filteredProducts.length === 1 ? "" : "s"
+  }`;
+
+  productGrid.innerHTML = filteredProducts
     .map(
       (product) => `
         <article class="product-card">
-          <div>
-            <span class="sku">${product.sku}</span>
+          <div class="product-visual visual-${product.category}" aria-hidden="true"></div>
+          <div class="product-body">
+            <div class="product-meta">
+              <span class="sku">${product.sku}</span>
+              <span class="category-pill">${categoryLabels[product.category]}</span>
+            </div>
             <h3>${product.name}</h3>
             <p>${product.detail}</p>
+            <ul class="product-list">
+              ${product.highlights.map((highlight) => `<li>${highlight}</li>`).join("")}
+            </ul>
           </div>
           <div class="product-footer">
-            <span>${categoryLabels[product.category]}</span>
+            <span>Venta por ${product.unit}</span>
             <button type="button" data-add="${product.sku}">Agregar</button>
           </div>
         </article>
@@ -163,9 +254,17 @@ function renderProducts() {
     )
     .join("");
 
-  if (!visibleProducts.length) {
-    productGrid.innerHTML = `<p class="muted">No encontre productos con esa busqueda.</p>`;
+  if (!filteredProducts.length) {
+    productGrid.innerHTML = `<p class="muted">No encontre productos con esa busqueda. Puedes escribir la referencia en el detalle del pedido.</p>`;
   }
+}
+
+// Cambia la categoria y baja al catalogo.
+function selectCategory(category) {
+  selectedCategory = category;
+  renderCategoryTabs();
+  renderProducts();
+  document.querySelector("#productos").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // Agrega un producto al pedido o aumenta su cantidad si ya estaba.
@@ -180,6 +279,7 @@ function addToCart(sku) {
     cart.push({ ...product, quantity: 1 });
   }
 
+  saveCart();
   renderCart();
   cartDrawer.classList.add("open");
 }
@@ -193,6 +293,14 @@ function updateCartQuantity(sku, change) {
     })
     .filter((item) => item.quantity > 0);
 
+  saveCart();
+  renderCart();
+}
+
+// Limpia todos los productos del pedido.
+function clearCart() {
+  cart = [];
+  saveCart();
   renderCart();
 }
 
@@ -210,10 +318,10 @@ function renderCart() {
                 <strong>${item.name}</strong>
                 <span>${item.sku} - ${item.unit}</span>
               </div>
-              <div class="qty-controls">
-                <button type="button" data-dec="${item.sku}">-</button>
+              <div class="qty-controls" aria-label="Cantidad de ${item.name}">
+                <button type="button" data-dec="${item.sku}" aria-label="Quitar uno">-</button>
                 <span>${item.quantity}</span>
-                <button type="button" data-inc="${item.sku}">+</button>
+                <button type="button" data-inc="${item.sku}" aria-label="Agregar uno">+</button>
               </div>
             </div>
           `
@@ -225,14 +333,20 @@ function renderCart() {
   drawerItems.innerHTML = html;
 }
 
-// Convierte el pedido completo en JSON para enviarlo a Python.
+// Convierte el pedido completo en JSON para enviarlo a n8n o Python.
 function formToPayload(formElement) {
   const data = new FormData(formElement);
   const mainItem = cart[0];
-  const notes = data.get("notes");
   const itemSummary = cart
     .map((item) => `${item.quantity} ${item.unit} - ${item.name} (${item.sku})`)
     .join("; ");
+  const notes = [
+    itemSummary,
+    data.get("notes"),
+    data.get("preferred_contact") ? `Contacto preferido: ${data.get("preferred_contact")}` : "",
+  ]
+    .filter(Boolean)
+    .join(" | ");
 
   return {
     full_name: data.get("full_name"),
@@ -244,10 +358,10 @@ function formToPayload(formElement) {
     product_category: mainItem ? mainItem.category : "",
     quantity: cart.reduce((total, item) => total + item.quantity, 0),
     unit: "item",
-    budget: "",
+    budget: data.get("budget"),
     urgency: data.get("urgency"),
     delivery_city: data.get("delivery_city"),
-    notes: [itemSummary, notes].filter(Boolean).join(" | "),
+    notes,
     items: cart.map((item) => ({
       sku: item.sku,
       name: item.name,
@@ -255,24 +369,35 @@ function formToPayload(formElement) {
       quantity: item.quantity,
       unit: item.unit,
     })),
-    source: "electropatios_storefront",
+    source: "electropatios_storefront_local",
     consent: data.get("consent") === "on",
   };
 }
 
-// Muestra confirmacion cuando el pedido fue recibido por la API.
+// Intenta leer JSON de la respuesta aunque algun servicio responda diferente.
+async function parseResponse(response) {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return { message: text };
+  }
+}
+
+// Muestra confirmacion cuando el pedido fue recibido por la API o por n8n.
 function renderSuccess(response) {
   const quote = response.quote || {};
-  const title = response.duplicate
-    ? "Ya recibimos un pedido parecido"
-    : "Pedido enviado";
+  const lead = response.lead || {};
+  const title = response.duplicate ? "Ya recibimos un pedido parecido" : "Pedido enviado";
+  const priority = lead.priority || response.priority || quote.priority || "pendiente";
 
   resultCard.innerHTML = `
     <h2>${title}</h2>
     <p>
       Recibimos tu solicitud con ${quote.quantity || cart.length} producto(s).
-      Un asesor de Electropatios revisara precio, disponibilidad y entrega
-      para contactarte.
+      Prioridad: ${priority}. Un asesor de Electropatios revisara precio,
+      disponibilidad y entrega para contactarte.
     </p>
   `;
   resultCard.classList.add("visible");
@@ -280,12 +405,13 @@ function renderSuccess(response) {
 
 // Muestra errores en lenguaje sencillo si falta algun dato.
 function renderError(message, details = []) {
+  const errorList = Array.isArray(details) ? details : [details];
   resultCard.innerHTML = `
     <h2>Revisa el pedido</h2>
     <p>${message}</p>
     ${
-      details.length
-        ? `<ul>${details.map((item) => `<li>${item}</li>`).join("")}</ul>`
+      errorList.length
+        ? `<ul>${errorList.map((item) => `<li>${item}</li>`).join("")}</ul>`
         : ""
     }
   `;
@@ -300,18 +426,16 @@ categoryTabs.addEventListener("click", (event) => {
   renderProducts();
 });
 
-productGrid.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-add]");
-  if (!button) return;
-  addToCart(button.dataset.add);
-});
-
 document.addEventListener("click", (event) => {
+  const addButton = event.target.closest("button[data-add]");
   const inc = event.target.closest("button[data-inc]");
   const dec = event.target.closest("button[data-dec]");
+  const jump = event.target.closest("button[data-jump-category]");
 
+  if (addButton) addToCart(addButton.dataset.add);
   if (inc) updateCartQuantity(inc.dataset.inc, 1);
   if (dec) updateCartQuantity(dec.dataset.dec, -1);
+  if (jump) selectCategory(jump.dataset.jumpCategory);
 });
 
 searchInput.addEventListener("input", renderProducts);
@@ -324,7 +448,9 @@ closeCart.addEventListener("click", () => {
   cartDrawer.classList.remove("open");
 });
 
-// Esta parte escucha el formulario y envia el pedido al backend.
+clearCartButton.addEventListener("click", clearCart);
+
+// Esta parte escucha el formulario y envia el pedido al flujo comercial.
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -333,7 +459,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  const button = form.querySelector("button");
+  const button = form.querySelector("button[type='submit']");
   button.disabled = true;
   button.textContent = "Enviando...";
 
@@ -346,7 +472,7 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify(formToPayload(form)),
     });
 
-    const body = await response.json();
+    const body = await parseResponse(response);
     if (!response.ok) {
       renderError("Falta informacion para preparar el pedido.", body.messages || body.errors || body.missing_fields || []);
       return;
@@ -354,14 +480,13 @@ form.addEventListener("submit", async (event) => {
 
     renderSuccess(body);
     form.reset();
-    cart = [];
-    renderCart();
+    clearCart();
     cartDrawer.classList.remove("open");
   } catch (error) {
     renderError("No pudimos enviar el pedido en este momento.", [error.message]);
   } finally {
     button.disabled = false;
-    button.textContent = "Enviar pedido";
+    button.textContent = "Enviar cotizacion";
   }
 });
 

@@ -13,7 +13,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 5 - CRM / GoHighLevel | Lista en modo seguro | Contacto, oportunidad, tags, pipeline y validacion sin enviar datos reales. |
 | Fase 6 - IA | Lista en modo seguro | Clasificacion, prompts, guardrails y paso a asesor humano sin modelo externo. |
 | Fase 7 - Voice AI | Lista en modo seguro | Agente telefonico simulado con transcripcion, clasificacion, respuesta segura y handoff. |
-| Fase 8 - WordPress + hosting | Pendiente | Landing, formulario, dominio, DNS y SSL. |
+| Fase 8 - WordPress + hosting | Lista version local | Pagina local completa; pendiente WordPress real, dominio, DNS y SSL. |
 | Fase 9 - Tracking | Pendiente | Analytics, Tag Manager, Pixel y UTM. |
 | Fase 10 - Email infrastructure | Pendiente | SPF, DKIM, DMARC y entregabilidad. |
 | Fase 11 - Deploy | Pendiente | API y pagina publicadas online. |
@@ -60,3 +60,9 @@ Herramientas: IA, prompts, clasificacion, guardrails, human handoff, n8n, prueba
 Aprendi la base de un agente telefonico sin conectar llamadas reales todavia. El sistema recibe una transcripcion, detecta intencion, producto, cantidad y urgencia, prepara una respuesta para telefono y deja un resumen para que un asesor continue.
 
 Herramientas: Voice AI, transcripciones, n8n, API REST, guardrails, human handoff, pruebas automatizadas.
+
+## Fase 8 - WordPress + hosting
+
+Aprendi primero la parte local de una pagina tipo negocio real. La pagina tiene inicio, catalogo, filtros, carrito de cotizacion, formulario, servicios, preguntas frecuentes y contacto. Todavia no pagamos hosting ni dominio; primero dejamos clara la experiencia antes de migrarla a WordPress real.
+
+Herramientas: HTML, CSS, JavaScript, estructura de landing, formulario comercial, n8n, conceptos de WordPress, hosting, dominio, DNS y SSL.

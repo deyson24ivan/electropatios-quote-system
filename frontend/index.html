@@ -3,14 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Electropatios vende material electrico para hogares, tecnicos, empresas y obras en Cucuta y zona metropolitana."
+    />
     <title>Electropatios - Material electrico en Cucuta</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Barra superior: aqui el cliente puede moverse por la pagina y abrir el pedido. -->
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Electropatios inicio">
-        <span class="brand-mark">E</span>
-        <span>
+      <a class="brand" href="#inicio" aria-label="Ir al inicio de Electropatios">
+        <span class="brand-mark">EP</span>
+        <span class="brand-copy">
           <strong>Electropatios</strong>
           <small>Material electrico</small>
         </span>
@@ -18,68 +23,185 @@
 
       <nav class="nav-links" aria-label="Navegacion principal">
         <a href="#productos">Productos</a>
-        <a href="#pedido">Pedido</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#pedido">Cotizar</a>
         <a href="#contacto">Contacto</a>
       </nav>
 
-      <button class="cart-button" id="cart-toggle" type="button">
-        Pedido <span id="cart-count">0</span>
-      </button>
+      <div class="topbar-actions">
+        <a class="phone-link" href="#contacto">Atencion local</a>
+        <button class="cart-button" id="cart-toggle" type="button" aria-label="Abrir pedido">
+          Pedido <span id="cart-count">0</span>
+        </button>
+      </div>
     </header>
 
     <main>
-      <!-- Esta es la primera parte que ve el cliente cuando entra a la pagina. -->
+      <!-- Primera vista: debe sentirse como una tienda real, no como explicacion tecnica. -->
       <section class="hero" id="inicio">
         <div class="hero-copy">
-          <p class="eyebrow">Cucuta y zona metropolitana</p>
-          <h1>Material electrico para instalaciones, obras y mantenimiento</h1>
+          <p class="eyebrow">Cucuta, Los Patios y Villa del Rosario</p>
+          <h1>Material electrico para instalar, reparar y comprar sin vueltas</h1>
           <p>
-            Encuentra cable, tuberia, conectores, lamparas, breakers,
-            tomacorrientes y herramientas. Agrega productos al pedido y un
-            asesor confirma precio, disponibilidad y entrega.
+            Cotiza cable, tuberia, lamparas, conectores, breakers, tomas y herramientas.
+            Arma tu pedido y un asesor confirma precio, disponibilidad y entrega.
           </p>
           <div class="hero-actions">
-            <a class="primary-link" href="#productos">Ver productos</a>
-            <a class="secondary-link" href="#pedido">Solicitar pedido</a>
+            <a class="primary-link" href="#productos">Ver catalogo</a>
+            <a class="secondary-link" href="#pedido">Cotizar ahora</a>
+          </div>
+        </div>
+
+        <div class="hero-panel" aria-label="Resumen de atencion">
+          <div>
+            <strong>Pedidos del dia</strong>
+            <span>Se revisan por prioridad y disponibilidad.</span>
+          </div>
+          <div>
+            <strong>Compras por volumen</strong>
+            <span>Atencion para tecnicos, empresas y obras.</span>
+          </div>
+          <div>
+            <strong>Entrega local</strong>
+            <span>Confirmacion segun zona y horario.</span>
           </div>
         </div>
       </section>
 
-      <!-- Aqui estan los productos que el cliente puede mirar y agregar al pedido. -->
+      <!-- Categorias destacadas para que el cliente llegue rapido al producto. -->
+      <section class="category-strip" aria-label="Categorias principales">
+        <button type="button" data-jump-category="cable">
+          <span>Cable</span>
+          <small>THHN, duplex, encauchetado</small>
+        </button>
+        <button type="button" data-jump-category="lamparas">
+          <span>Lamparas</span>
+          <small>Paneles, reflectores, bombillos</small>
+        </button>
+        <button type="button" data-jump-category="tuberia">
+          <span>Tuberia</span>
+          <small>PVC, EMT y accesorios</small>
+        </button>
+        <button type="button" data-jump-category="proteccion">
+          <span>Proteccion</span>
+          <small>Breakers, tomas, tableros</small>
+        </button>
+      </section>
+
+      <!-- Catalogo local: los productos salen de frontend/script.js. -->
       <section class="catalog-section" id="productos" aria-labelledby="catalog-title">
         <div class="section-heading">
           <p class="eyebrow">Catalogo</p>
-          <h2 id="catalog-title">Productos principales</h2>
+          <h2 id="catalog-title">Productos que mas piden nuestros clientes</h2>
           <p>
-            Filtra por categoria o busca una referencia. Si no ves el producto
-            exacto, agregalo como "otro producto" en el detalle del pedido.
+            Usa el buscador, filtra por categoria y agrega lo que necesitas. Si la referencia
+            exacta cambia, dejala escrita en el detalle del pedido.
           </p>
         </div>
 
-        <div class="catalog-tools">
-          <label class="search-box">
-            Buscar producto
-            <input id="search-input" type="search" placeholder="Ej: cable, breaker, lampara" />
-          </label>
+        <div class="catalog-layout">
+          <aside class="catalog-sidebar" aria-label="Filtros del catalogo">
+            <label class="search-box">
+              Buscar producto
+              <input id="search-input" type="search" placeholder="Ej: cable, breaker, tubo" />
+            </label>
 
-          <div class="category-tabs" id="category-tabs" aria-label="Categorias"></div>
+            <div>
+              <p class="filter-title">Categorias</p>
+              <div class="category-tabs" id="category-tabs" aria-label="Categorias"></div>
+            </div>
+
+            <div class="catalog-note">
+              <strong>No ves una referencia?</strong>
+              <p>Agrega un producto parecido y escribe marca, medida o foto de referencia en el detalle.</p>
+            </div>
+          </aside>
+
+          <div>
+            <div class="catalog-bar">
+              <p id="catalog-count">0 productos disponibles</p>
+              <a href="#pedido">Ir al pedido</a>
+            </div>
+            <div class="product-grid" id="product-grid"></div>
+          </div>
         </div>
-
-        <div class="product-grid" id="product-grid"></div>
       </section>
 
-      <!-- Este bloque reemplaza la idea de pago online: el cliente arma un pedido y se confirma por asesor. -->
+      <!-- Servicios comerciales de la empresa. -->
+      <section class="services-section" id="servicios" aria-labelledby="services-title">
+        <div class="section-heading">
+          <p class="eyebrow">Atencion comercial</p>
+          <h2 id="services-title">Compras para casa, tecnicos y obras</h2>
+          <p>
+            Electropatios atiende pedidos pequenos, reposiciones urgentes y compras por volumen.
+          </p>
+        </div>
+
+        <div class="service-grid">
+          <article>
+            <span class="service-number">01</span>
+            <h3>Cotizacion por lista</h3>
+            <p>Envia varias referencias y cantidades para que un asesor organice la respuesta.</p>
+          </article>
+          <article>
+            <span class="service-number">02</span>
+            <h3>Material para tecnicos</h3>
+            <p>Cable, tuberia, conectores, protecciones y consumibles para instalaciones.</p>
+          </article>
+          <article>
+            <span class="service-number">03</span>
+            <h3>Compras por volumen</h3>
+            <p>Pedidos para empresas, ferreterias, mantenimientos y proyectos en obra.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Paso a paso para que el cliente entienda como compra sin pago online. -->
+      <section class="process-section" aria-labelledby="process-title">
+        <div class="section-heading">
+          <p class="eyebrow">Como funciona</p>
+          <h2 id="process-title">Armas el pedido y confirmamos contigo</h2>
+        </div>
+
+        <ol class="process-list">
+          <li>
+            <span>1</span>
+            <strong>Agrega productos</strong>
+            <p>Selecciona referencias del catalogo y ajusta cantidades.</p>
+          </li>
+          <li>
+            <span>2</span>
+            <strong>Deja tus datos</strong>
+            <p>Indica ciudad, urgencia y cualquier detalle importante.</p>
+          </li>
+          <li>
+            <span>3</span>
+            <strong>Recibes respuesta</strong>
+            <p>Un asesor confirma precio, disponibilidad y forma de entrega.</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Pedido y formulario conectados con n8n/API. -->
       <section class="checkout-section" id="pedido" aria-labelledby="order-title">
         <div class="order-summary">
           <p class="eyebrow">Tu pedido</p>
           <h2 id="order-title">Productos seleccionados</h2>
+          <p class="summary-text">
+            Los precios se confirman por asesor porque pueden cambiar segun referencia,
+            disponibilidad y cantidad.
+          </p>
           <div id="cart-items" class="cart-items">
             <p class="muted">Agrega productos del catalogo para preparar tu pedido.</p>
           </div>
+          <button class="clear-cart" id="clear-cart" type="button">Vaciar pedido</button>
         </div>
 
         <form id="quote-form" class="quote-form">
-          <h2>Datos de contacto</h2>
+          <div class="form-heading">
+            <p class="eyebrow">Cotizacion</p>
+            <h2>Datos para responderte</h2>
+          </div>
 
           <label>
             Nombre completo
@@ -134,9 +256,29 @@
             </label>
           </div>
 
+          <div class="two-column">
+            <label>
+              Presupuesto aproximado
+              <input name="budget" inputmode="numeric" placeholder="Opcional" />
+            </label>
+
+            <label>
+              Prefieres que te contacten por
+              <select name="preferred_contact">
+                <option value="telefono">Telefono</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">Email</option>
+              </select>
+            </label>
+          </div>
+
           <label>
             Detalle adicional
-            <textarea name="notes" rows="4" placeholder="Ej: confirmar calibre, marca, disponibilidad o entrega"></textarea>
+            <textarea
+              name="notes"
+              rows="4"
+              placeholder="Ej: necesito confirmar calibre, marca, medidas, factura o entrega"
+            ></textarea>
           </label>
 
           <label class="checkbox-row">
@@ -144,35 +286,90 @@
             Acepto ser contactado por un asesor de Electropatios.
           </label>
 
-          <button type="submit">Enviar pedido</button>
+          <button type="submit">Enviar cotizacion</button>
         </form>
       </section>
 
+      <!-- Bloque de confianza para que la pagina se sienta de negocio real. -->
+      <section class="trust-section" aria-label="Confianza Electropatios">
+        <div>
+          <strong>Atencion directa</strong>
+          <span>Sin pago online hasta confirmar disponibilidad.</span>
+        </div>
+        <div>
+          <strong>Pedido organizado</strong>
+          <span>Tu lista llega con productos, cantidades y urgencia.</span>
+        </div>
+        <div>
+          <strong>Soporte local</strong>
+          <span>Respuesta para Cucuta y municipios cercanos.</span>
+        </div>
+      </section>
+
+      <!-- Preguntas frecuentes de cliente real. -->
+      <section class="faq-section" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <p class="eyebrow">Preguntas frecuentes</p>
+          <h2 id="faq-title">Antes de enviar tu pedido</h2>
+        </div>
+
+        <div class="faq-list">
+          <details>
+            <summary>La pagina muestra precios?</summary>
+            <p>No. El asesor confirma precio porque depende de referencia, cantidad y disponibilidad.</p>
+          </details>
+          <details>
+            <summary>Puedo pedir varias referencias?</summary>
+            <p>Si. Agrega todo al pedido y escribe cualquier marca o medida especial en el detalle.</p>
+          </details>
+          <details>
+            <summary>Atienden compras de empresas?</summary>
+            <p>Si. Puedes marcar tipo de cliente como empresa, ferreteria o constructora.</p>
+          </details>
+          <details>
+            <summary>Me pueden asesorar tecnicamente?</summary>
+            <p>Un asesor puede revisar tu caso, pero las decisiones de instalacion deben confirmarse con personal calificado.</p>
+          </details>
+        </div>
+      </section>
+
+      <!-- Contacto visible para dar cierre a la pagina. -->
       <section class="contact-section" id="contacto">
         <div>
           <p class="eyebrow">Contacto</p>
           <h2>Atencion para compras pequenas y pedidos por volumen</h2>
         </div>
-        <p>
-          Si necesitas una referencia especifica, deja el detalle en el pedido.
-          Un asesor revisa la solicitud y confirma precio, disponibilidad y
-          forma de entrega.
-        </p>
+        <div class="contact-list">
+          <p>
+            Deja tu pedido en la pagina y un asesor de Electropatios revisa precio,
+            disponibilidad y entrega.
+          </p>
+          <ul>
+            <li>Cobertura: Cucuta y zona metropolitana.</li>
+            <li>Productos: cable, tuberia, iluminacion, proteccion y accesorios.</li>
+            <li>Atencion: hogares, tecnicos, empresas, obras y ferreterias.</li>
+          </ul>
+          <a class="primary-link" href="#pedido">Preparar pedido</a>
+        </div>
       </section>
     </main>
 
+    <!-- Panel lateral del carrito. Se abre sin recargar la pagina. -->
     <aside class="cart-drawer" id="cart-drawer" aria-label="Resumen del pedido">
       <div class="drawer-header">
-        <h2>Pedido</h2>
+        <div>
+          <p class="eyebrow">Resumen</p>
+          <h2>Pedido</h2>
+        </div>
         <button id="close-cart" type="button" aria-label="Cerrar pedido">Cerrar</button>
       </div>
       <div id="drawer-items" class="cart-items"></div>
       <a class="primary-link full-width" href="#pedido">Completar datos</a>
     </aside>
 
+    <!-- Tarjeta para mostrar confirmaciones o errores del envio. -->
     <div id="result-card" class="result-card" aria-live="polite"></div>
 
     <script src="script.js"></script>
   </body>
 </html>
-
