@@ -77,7 +77,7 @@ Ejemplo:
 
 ## Salida para GoHighLevel
 
-Tampoco conectamos GoHighLevel todavia. Pero dejamos preparado el formato mental que vamos a usar en la Fase 5:
+En esta fase tambien deje preparado el formato que despues conecte con GoHighLevel en modo seguro:
 
 - `contact`: datos de la persona.
 - `opportunity`: oportunidad comercial dentro de un pipeline.
@@ -108,4 +108,4 @@ En esta fase no enviamos WhatsApp real ni email real. Primero dejamos el mensaje
 
 ## Como lo explicaria en entrevista
 
-Construyo una automatizacion donde una solicitud web se convierte en una cotizacion validada y despues en un lead comercial. El sistema prepara una fila para Google Sheets, una estructura compatible con CRM y una notificacion interna cuando la prioridad es alta. Use n8n para orquestar el flujo y Python para mantener reglas claras y probables con pruebas automatizadas.
+Construi una automatizacion donde una solicitud web se convierte en una cotizacion validada y despues en un lead comercial. El sistema prepara una fila para Google Sheets, una estructura compatible con CRM y una notificacion interna cuando la prioridad es alta. Use n8n para orquestar el flujo y Python para mantener reglas claras y probadas con pruebas automatizadas.

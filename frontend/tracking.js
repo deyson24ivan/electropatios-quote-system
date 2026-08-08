@@ -2,6 +2,9 @@ const TRACKING_API_URL = "http://127.0.0.1:5000/api/tracking/events";
 const TRACKING_SESSION_KEY = "electropatios_tracking_session";
 const TRACKING_QUEUE_KEY = "electropatios_tracking_queue";
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+
+// Este archivo mide acciones importantes de la pagina.
+// En local manda eventos a Flask; online los guarda como demo en el navegador.
 const IS_LOCAL_TRACKING =
   window.location.protocol === "file:" ||
   window.location.hostname === "localhost" ||

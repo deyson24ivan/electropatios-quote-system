@@ -77,6 +77,7 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+# Junto transcripcion y datos sueltos para analizar la llamada como un solo texto.
 def text_from_payload(payload: dict[str, Any]) -> str:
     parts = [
         clean_text(payload.get("transcript")),
@@ -88,20 +89,24 @@ def text_from_payload(payload: dict[str, Any]) -> str:
     return " ".join(part for part in parts if part).lower()
 
 
+# Reviso si alguna palabra clave aparece en la llamada.
 def has_any_term(text: str, terms: set[str]) -> bool:
     return any(term in text for term in terms)
 
 
+# Uso solo el primer nombre para que la respuesta telefonica suene natural.
 def first_name(full_name: str) -> str:
     parts = clean_text(full_name).split()
     return parts[0] if parts else ""
 
 
+# Convierte la categoria interna en una palabra entendible para el cliente.
 def category_label(category: str) -> str:
     labels = PRODUCT_CATEGORIES.get(category) or PRODUCT_CATEGORIES["otros"]
     return labels[0].lower()
 
 
+# Intenta leer cantidades como "120 metros" desde la transcripcion.
 def extract_quantity_and_unit(payload: dict[str, Any], text: str) -> tuple[int, str]:
     quantity = parse_positive_int(payload.get("quantity"))
     unit = slug_text(payload.get("unit") or "")
@@ -120,6 +125,7 @@ def extract_quantity_and_unit(payload: dict[str, Any], text: str) -> tuple[int, 
     return int(match.group(1)), UNIT_ALIASES.get(raw_unit, raw_unit)
 
 
+# Detecta urgencia usando el campo directo o palabras dichas por el cliente.
 def detect_urgency(payload: dict[str, Any], text: str) -> str:
     payload_urgency = slug_text(payload.get("urgency") or "")
     if payload_urgency:
@@ -133,6 +139,7 @@ def detect_urgency(payload: dict[str, Any], text: str) -> str:
     return "esta_semana"
 
 
+# Decide que tipo de llamada es: cotizacion, disponibilidad o consulta tecnica.
 def detect_call_intent(text: str, ai_intent: str, category: str, quantity: int) -> str:
     if has_any_term(text, VOICE_TECHNICAL_TERMS):
         return "technical_advice"
@@ -145,6 +152,7 @@ def detect_call_intent(text: str, ai_intent: str, category: str, quantity: int) 
     return "unknown"
 
 
+# La prioridad ayuda a decidir si el asesor debe llamar de una vez.
 def priority_for_call(intent: str, urgency: str, quantity: int, text: str) -> str:
     if intent == "technical_advice":
         return "high"
@@ -157,6 +165,7 @@ def priority_for_call(intent: str, urgency: str, quantity: int, text: str) -> st
     return "low"
 
 
+# La confianza sube cuando tengo producto, cantidad, nombre y telefono.
 def confidence_for_call(intent: str, category: str, quantity: int, caller_name: str, phone: str) -> str:
     if intent != "unknown" and category != "otros" and quantity > 0 and caller_name and phone:
         return "high"
@@ -165,6 +174,7 @@ def confidence_for_call(intent: str, category: str, quantity: int, caller_name: 
     return "low"
 
 
+# Preguntas que el agente deberia hacer si faltan datos importantes.
 def missing_questions(call: dict[str, Any]) -> list[str]:
     questions = []
     if not call["caller_name"]:
@@ -180,6 +190,7 @@ def missing_questions(call: dict[str, Any]) -> list[str]:
     return questions
 
 
+# Convierte una lista de preguntas en texto corto para una llamada.
 def format_questions(questions: list[str]) -> str:
     if not questions:
         return ""
@@ -188,6 +199,7 @@ def format_questions(questions: list[str]) -> str:
     return ", ".join(questions[:-1]) + " y " + questions[-1]
 
 
+# Respuesta segura: no confirma precio, stock ni instrucciones tecnicas.
 def safe_voice_reply(call: dict[str, Any]) -> str:
     name = first_name(call["caller_name"])
     greeting = f"Claro, {name}." if name else "Claro."
@@ -230,6 +242,7 @@ def safe_voice_reply(call: dict[str, Any]) -> str:
     )
 
 
+# Decide si la llamada debe pasar a asesor humano.
 def handoff_for_call(call: dict[str, Any], ai_handoff: bool) -> tuple[bool, str]:
     if call["intent"] == "technical_advice":
         return True, "consulta_tecnica"
@@ -244,6 +257,7 @@ def handoff_for_call(call: dict[str, Any], ai_handoff: bool) -> tuple[bool, str]
     return False, "respuesta_segura"
 
 
+# Resumen para que el asesor entienda la llamada sin leer todo.
 def build_advisor_brief(call: dict[str, Any]) -> str:
     return (
         f"Llamada {call['priority']} de Electropatios: {call['caller_name'] or 'cliente por confirmar'} "
@@ -253,6 +267,7 @@ def build_advisor_brief(call: dict[str, Any]) -> str:
     )
 
 
+# Borrador de lead si despues quiero convertir la llamada en seguimiento comercial.
 def build_voice_lead_draft(call: dict[str, Any]) -> dict[str, Any]:
     return {
         "full_name": call["caller_name"],
@@ -270,6 +285,7 @@ def build_voice_lead_draft(call: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# Funcion principal: recibe una transcripcion y prepara respuesta telefonica segura.
 def build_voice_call_record(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     text = text_from_payload(payload)
     errors: list[str] = []

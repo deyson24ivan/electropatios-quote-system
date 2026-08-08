@@ -76,7 +76,7 @@ Despues de guardar, GitHub publica la pagina cada vez que haya cambios en `main`
 
 ## URL esperada
 
-Cuando GitHub Pages termine, la pagina deberia quedar parecida a:
+La pagina publicada queda en:
 
 ```text
 https://deyson24ivan.github.io/electropatios-quote-system/

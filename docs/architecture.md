@@ -30,7 +30,7 @@ flowchart TD
   R --> U["Notificacion interna"]
   A --> Z["Tracking local"]
   Z --> AA["Eventos, UTM y conversiones"]
-  AA --> AB["Plan email SPF/DKIM/DMARC"]
+  E --> AB["Plan email SPF/DKIM/DMARC"]
   V["Llamada simulada"] --> W["Webhook electropatios-voice-call"]
   W --> X["POST /api/voice/intake"]
   X --> Y["Respuesta telefonica segura"]
@@ -145,3 +145,12 @@ La API genera el plan con `POST /api/email/dns-plan`. No cambia DNS reales. Eso 
 La primera version online publica solo `frontend/` en GitHub Pages. Esto permite mostrar la pagina sin pagar hosting y sin abrir servicios locales al internet.
 
 Cuando la pagina corre en el computador, el formulario usa n8n/API. Cuando corre en GitHub Pages, usa modo demo online y guarda la solicitud en el navegador. Asi la experiencia no falla aunque `localhost` no exista para visitantes externos.
+
+## Cierre de portafolio
+
+Para cerrar el proyecto deje dos documentos de repaso:
+
+- `docs/code-walkthrough.md`: mapa de carpetas y archivos.
+- `docs/portfolio-guide.md`: resumen para explicar el proyecto en entrevista.
+
+La idea es poder defender el proyecto por partes: pagina, API, n8n, base de datos, CRM, IA, voz, tracking, email y deploy.

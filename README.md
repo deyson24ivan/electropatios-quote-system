@@ -1,10 +1,18 @@
-# Electropatios Quote Automation Platform
+# Electropatios Quote Automation
 
-Proyecto de portafolio para practicar automatizacion, CRM, webhooks, n8n, MySQL, APIs REST e IA usando un caso realista: solicitudes de cotizacion para Electropatios.
+Este es mi proyecto de portafolio para practicar automatizacion comercial con un caso realista: una pagina de Electropatios donde el cliente arma un pedido de materiales electricos y el sistema prepara el seguimiento.
 
-Electropatios vende productos electricos como lamparas, conectores, cable, tuberia, breakers, tomacorrientes y accesorios. El sistema recibe solicitudes desde una pagina web, valida datos, clasifica la prioridad y deja todo listo para seguimiento.
+Electropatios vende productos como lamparas, conectores, cable, tuberia, breakers, tomacorrientes y accesorios. La idea fue construir una sola base de proyecto para aprender Git/GitHub, API, n8n, CRM, IA segura, Voice AI, tracking, email infrastructure y deploy.
 
-## Que demuestra este proyecto
+## Demo online
+
+```text
+https://deyson24ivan.github.io/electropatios-quote-system/
+```
+
+La demo online muestra la pagina y el flujo de carrito/formulario. Como GitHub Pages no ejecuta Flask ni n8n, online uso un modo demo seguro. En mi computador, el mismo frontend puede enviar pedidos al webhook local de n8n.
+
+## Que construi
 
 - Pagina web con formulario real de cotizacion.
 - Pagina local completa con inicio, catalogo, servicios, preguntas y contacto.
@@ -20,6 +28,7 @@ Electropatios vende productos electricos como lamparas, conectores, cable, tuber
 - Tracking local con eventos, UTM y conversiones antes de conectar Analytics real.
 - Infraestructura email en modo seguro para preparar SPF, DKIM, DMARC y entregabilidad.
 - Deploy de portafolio con GitHub Pages desde la rama `main`.
+- Mapa de codigo y guia de portafolio para repasar el proyecto.
 - Notificacion interna para pedidos urgentes.
 - Catalogo base para futuras preguntas con IA.
 - Persistencia en MySQL, con respaldo local si MySQL no esta disponible.
@@ -58,10 +67,12 @@ electropatios-quote-system/
 |   |-- deploy-guide.md
 |   |-- api-guide.md
 |   |-- ai-safe-mode-guide.md
+|   |-- code-walkthrough.md
 |   |-- gohighlevel-safe-mode-guide.md
 |   |-- email-infrastructure-guide.md
 |   |-- lead-automation-guide.md
 |   |-- n8n-guide.md
+|   |-- portfolio-guide.md
 |   |-- tracking-guide.md
 |   |-- voice-ai-safe-mode-guide.md
 |   |-- wordpress-local-web-guide.md
@@ -82,7 +93,7 @@ electropatios-quote-system/
 `-- requirements.txt
 ```
 
-## Como probar la primera version
+## Como probarlo localmente
 
 1. Crear un entorno virtual de Python.
 2. Instalar dependencias.
@@ -115,6 +126,8 @@ Tambien puedes consultar el catalogo base:
 ```text
 http://localhost:5000/api/catalog
 ```
+
+## Guias para repasar
 
 Para entender la API paso a paso, revisa:
 
@@ -170,6 +183,18 @@ Para entender el deploy de portafolio con GitHub Pages, revisa:
 docs/deploy-guide.md
 ```
 
+Para repasar el codigo archivo por archivo, revisa:
+
+```text
+docs/code-walkthrough.md
+```
+
+Para preparar la explicacion de entrevista, revisa:
+
+```text
+docs/portfolio-guide.md
+```
+
 Para entender la pagina local y como se relaciona con WordPress, revisa:
 
 ```text
@@ -188,7 +213,7 @@ La instalacion local actual de n8n usa `npx`, version `2.33.5`, con datos en:
 C:\Users\deyso\.n8n
 ```
 
-La pagina de portafolio se publica con GitHub Pages desde `main / root`. El archivo raiz `index.html` abre la pagina real de `frontend/`. Cuando el deploy termine, la URL esperada es:
+La pagina de portafolio se publica con GitHub Pages desde `main / root`. El archivo raiz `index.html` abre la pagina real de `frontend/`.
 
 ```text
 https://deyson24ivan.github.io/electropatios-quote-system/
@@ -212,13 +237,17 @@ flowchart LR
   J --> M["Notificacion al asesor"]
   A --> R["Tracking local"]
   R --> S["Eventos y UTM"]
-  S --> T2["Plan SPF/DKIM/DMARC"]
+  E --> T2["Plan SPF/DKIM/DMARC"]
   N["Llamada simulada"] --> O["Webhook voice n8n"]
   O --> P["API /api/voice/intake"]
   P --> Q["Respuesta telefonica segura"]
   P --> M
 ```
 
-## Frase de portafolio
+## Como lo explico rapido
 
-Construyo un sistema de automatizacion comercial para Electropatios con una pagina local completa donde un cliente arma pedidos de materiales electricos. La API valida campos, clasifica prioridad, crea un lead comercial, aplica IA segura con guardrails, simula llamadas con Voice AI, registra tracking local con UTM, prepara sincronizacion CRM, genera un plan seguro de SPF, DKIM y DMARC, y publica una demo de portafolio en GitHub Pages.
+Construi un sistema de automatizacion comercial para Electropatios. La pagina permite armar pedidos de materiales electricos, la API valida y clasifica la solicitud, n8n orquesta el flujo, el backend crea leads, prepara CRM/Sheets/notificaciones, aplica IA y voz en modo seguro, registra tracking local, genera un plan SPF/DKIM/DMARC y publica una demo online en GitHub Pages.
+
+## Estado actual
+
+Las 12 fases del proyecto estan cerradas como version de aprendizaje y portafolio. Lo que falta para un trabajo real seria subir API/n8n/base de datos a servidores, conectar credenciales reales y activar dominio, CRM, email y tracking reales.

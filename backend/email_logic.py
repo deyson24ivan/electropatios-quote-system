@@ -49,10 +49,12 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+# Limpio el dominio para comparar siempre en minusculas y sin punto final.
 def clean_domain(value: Any) -> str:
     return clean_text(value).lower().strip(".")
 
 
+# Valido formato basico de dominio antes de preparar registros DNS.
 def valid_domain(value: str) -> bool:
     if not value:
         return False
@@ -61,6 +63,7 @@ def valid_domain(value: str) -> bool:
     return bool(DOMAIN_PATTERN.match(value))
 
 
+# Acepto proveedores como lista o texto separado por comas.
 def normalize_providers(value: Any) -> list[str]:
     if isinstance(value, str):
         raw_providers = [item for item in value.split(",")]
@@ -78,6 +81,7 @@ def normalize_providers(value: Any) -> list[str]:
     return providers or DEFAULT_PROVIDERS
 
 
+# Nombre bonito del proveedor para advertencias y explicaciones.
 def provider_label(provider: str) -> str:
     preset = PROVIDER_PRESETS.get(provider)
     if preset:
@@ -85,6 +89,7 @@ def provider_label(provider: str) -> str:
     return clean_text(provider).replace("_", " ").title()
 
 
+# Arma el SPF con los includes que conozco y marca lo que debo revisar manualmente.
 def build_spf_value(providers: list[str]) -> tuple[str, list[str]]:
     includes = []
     missing = []
@@ -103,10 +108,12 @@ def build_spf_value(providers: list[str]) -> tuple[str, list[str]]:
     return "pendiente: copiar el SPF exacto del proveedor", missing
 
 
+# DMARC empieza suave con p=none para mirar reportes antes de bloquear.
 def dmarc_value(report_email: str) -> str:
     return f"v=DMARC1; p=none; rua=mailto:{report_email}; fo=1"
 
 
+# Registro SPF: quien puede enviar correo por el dominio.
 def build_spf_record(domain: str, providers: list[str]) -> tuple[dict[str, Any], list[str]]:
     value, missing = build_spf_value(providers)
     status = "provider_required" if value.startswith("pendiente") else "review_before_publish"
@@ -125,6 +132,7 @@ def build_spf_record(domain: str, providers: list[str]) -> tuple[dict[str, Any],
     )
 
 
+# Registros DKIM: siempre dependen de la clave que entregue cada proveedor real.
 def build_dkim_records(domain: str, providers: list[str]) -> list[dict[str, Any]]:
     records = []
 
@@ -149,6 +157,7 @@ def build_dkim_records(domain: str, providers: list[str]) -> list[dict[str, Any]
     return records
 
 
+# Registro DMARC: como se revisan SPF/DKIM y a donde llegan reportes.
 def build_dmarc_record(domain: str, report_email: str) -> dict[str, Any]:
     return {
         "type": "TXT",
@@ -161,6 +170,7 @@ def build_dmarc_record(domain: str, report_email: str) -> dict[str, Any]:
     }
 
 
+# Advertencias para no publicar DNS mal durante una prueba.
 def build_warnings(providers: list[str], spf_missing: list[str]) -> list[str]:
     warnings = [
         "No publicar dos registros SPF separados; si hay varios proveedores, se unen en un solo TXT.",
@@ -181,6 +191,7 @@ def build_warnings(providers: list[str], spf_missing: list[str]) -> list[str]:
     return warnings
 
 
+# Pasos que seguiria cuando tenga dominio y proveedor reales.
 def build_next_steps(domain: str) -> list[str]:
     return [
         f"Entrar al panel DNS del dominio {domain}.",
@@ -192,6 +203,7 @@ def build_next_steps(domain: str) -> list[str]:
     ]
 
 
+# Funcion principal: prepara el plan sin tocar DNS reales.
 def build_email_dns_plan(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     domain = clean_domain(payload.get("domain") or payload.get("sending_domain"))
     mail_from_domain = clean_domain(payload.get("mail_from_domain"))

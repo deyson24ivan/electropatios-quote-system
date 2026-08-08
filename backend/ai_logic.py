@@ -56,6 +56,7 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+# Saco el lead del JSON cuando n8n ya lo creo antes.
 def extract_lead(payload: dict[str, Any]) -> dict[str, Any]:
     lead = payload.get("lead")
     if isinstance(lead, dict):
@@ -63,6 +64,7 @@ def extract_lead(payload: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+# Saco la cotizacion del JSON cuando quiero clasificar desde el pedido original.
 def extract_quote(payload: dict[str, Any]) -> dict[str, Any]:
     quote = payload.get("quote")
     if isinstance(quote, dict):
@@ -70,6 +72,7 @@ def extract_quote(payload: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+# Junto todos los textos posibles para que la clasificacion tenga contexto.
 def text_from_payload(payload: dict[str, Any]) -> str:
     lead = extract_lead(payload)
     quote = extract_quote(payload)
@@ -85,10 +88,12 @@ def text_from_payload(payload: dict[str, Any]) -> str:
     return " ".join(part for part in parts if part).lower()
 
 
+# Busca palabras simples dentro del texto. Esta fase usa reglas, no modelo externo.
 def words_found(text: str, words: set[str]) -> list[str]:
     return sorted(word for word in words if word in text)
 
 
+# Decide si el cliente quiere cotizar, preguntar producto, disponibilidad o asesoria tecnica.
 def detect_intent(text: str, quote: dict[str, Any], lead: dict[str, Any]) -> tuple[str, list[str]]:
     request_type = slug_text(quote.get("request_type") or "")
     if request_type == "quote" or lead.get("id"):
@@ -111,6 +116,7 @@ def detect_intent(text: str, quote: dict[str, Any], lead: dict[str, Any]) -> tup
     return detected[0]
 
 
+# Intenta reconocer la categoria del producto usando catalogo y texto del cliente.
 def detect_category(text: str, quote: dict[str, Any], lead: dict[str, Any]) -> tuple[str, list[str]]:
     known_category = slug_text(lead.get("product_category") or quote.get("product_category") or "")
     if known_category in PRODUCT_CATEGORIES and known_category != "otros":
@@ -130,6 +136,7 @@ def detect_category(text: str, quote: dict[str, Any], lead: dict[str, Any]) -> t
     return category, matches[category]
 
 
+# Marca las cosas que el sistema no debe prometer sin revision humana.
 def detect_guardrails(text: str, intent: str) -> list[str]:
     guardrails = []
     for guardrail, words in GUARDRAIL_KEYWORDS.items():
@@ -144,6 +151,7 @@ def detect_guardrails(text: str, intent: str) -> list[str]:
     return guardrails
 
 
+# La confianza me ayuda a decidir si puedo responder o si debo pasar a asesor.
 def confidence_for(intent: str, category: str, intent_matches: list[str], category_matches: list[str]) -> str:
     if intent != "unknown" and category != "otros":
         return "high"
@@ -152,6 +160,7 @@ def confidence_for(intent: str, category: str, intent_matches: list[str], catego
     return "low"
 
 
+# Decide cuando un humano debe revisar antes de responder al cliente.
 def handoff_decision(intent: str, confidence: str, guardrails: list[str], lead: dict[str, Any]) -> tuple[bool, str]:
     if lead.get("priority") == "high":
         return True, "lead_prioritario"
@@ -164,6 +173,7 @@ def handoff_decision(intent: str, confidence: str, guardrails: list[str], lead: 
     return False, "respuesta_segura"
 
 
+# Etiquetas que despues pueden viajar a CRM o usarse para reportes.
 def suggested_tags(intent: str, category: str, handoff_required: bool) -> list[str]:
     tags = ["ai_safe_mode", f"ai_intent_{intent}", f"ai_category_{category}"]
     if handoff_required:
@@ -171,6 +181,7 @@ def suggested_tags(intent: str, category: str, handoff_required: bool) -> list[s
     return tags
 
 
+# Dejo preparado el prompt para cuando conecte una IA real.
 def prompt_pack(text: str, category: str) -> dict[str, Any]:
     return {
         "system_prompt": (
@@ -198,6 +209,7 @@ def prompt_pack(text: str, category: str) -> dict[str, Any]:
     }
 
 
+# Funcion principal: clasifica y prepara respuesta segura.
 def build_ai_analysis(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     lead = extract_lead(payload)
     quote = extract_quote(payload)

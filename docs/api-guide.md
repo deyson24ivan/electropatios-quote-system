@@ -155,7 +155,7 @@ Ese endpoint responde con datos listos para seguimiento:
 }
 ```
 
-En la Fase 5 usaremos esa parte de `ghl_payloads` para hablar con GoHighLevel.
+Esa parte de `ghl_payloads` fue la base para preparar GoHighLevel en modo seguro.
 
 ## Respuesta CRM en modo seguro
 

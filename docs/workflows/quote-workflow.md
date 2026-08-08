@@ -28,8 +28,8 @@
 3. La API guarda la cotizacion y calcula prioridad.
 4. n8n llama a `POST /api/leads`.
 5. La API crea un lead con etapa comercial, tags y resumen de productos.
-6. n8n prepara la fila que despues ira a Google Sheets.
-7. n8n deja listo el payload que despues usaremos para GoHighLevel.
+6. n8n prepara la fila que puede ir a Google Sheets.
+7. n8n deja listo el payload que use para GoHighLevel en modo seguro.
 8. Si el lead es urgente, n8n guarda una notificacion interna para el asesor.
 9. La pagina recibe una respuesta con `quote_id`, `lead_id`, prioridad y estado.
 

@@ -12,6 +12,8 @@ const clearCartButton = document.querySelector("#clear-cart");
 const resultCard = document.querySelector("#result-card");
 const catalogCount = document.querySelector("#catalog-count");
 
+// Este archivo maneja toda la parte viva de la pagina:
+// catalogo, filtros, carrito, formulario y envio del pedido.
 // Aqui decido por donde se envia el pedido.
 // En mi PC uso n8n/API. En GitHub Pages uso modo demo para que no falle por localhost.
 const API_URL = "http://localhost:5000/api/quotes";

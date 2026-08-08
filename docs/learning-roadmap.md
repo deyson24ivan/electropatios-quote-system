@@ -6,7 +6,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 
 | Fase | Estado | Evidencia |
 | --- | --- | --- |
-| Fase 1 - Git/GitHub | Lista | Repositorio privado, commits, README y `.gitignore`. |
+| Fase 1 - Git/GitHub | Lista | Repositorio en GitHub, commits, README y `.gitignore`. |
 | Fase 2 - Webhook + API | Lista | API Flask con `GET /health`, `GET /api/catalog` y `POST /api/quotes`. |
 | Fase 3 - n8n | Lista | Workflow activo para recibir pedidos, validar datos y llamar la API. |
 | Fase 4 - Lead Automation | Lista | Formulario -> n8n -> lead -> fila para Sheets -> notificacion interna. |
@@ -17,7 +17,7 @@ El objetivo no es aprender veinte herramientas al tiempo. La idea es construir u
 | Fase 9 - Tracking | Lista en modo local | Eventos, conversiones y UTM sin conectar herramientas externas. |
 | Fase 10 - Email infrastructure | Lista en modo seguro | Plan SPF, DKIM, DMARC y entregabilidad sin tocar DNS reales. |
 | Fase 11 - Deploy | Lista version GitHub Pages | Pagina online como demo de portafolio; API y n8n siguen locales. |
-| Fase 12 - Portfolio | Pendiente | README final, diagramas, capturas y demo. |
+| Fase 12 - Portfolio | Lista | README final, mapa de codigo, guia de portafolio y demo online. |
 
 ## Fase 1 - Git/GitHub
 
@@ -84,3 +84,9 @@ Herramientas: DNS, SPF, DKIM, DMARC, entregabilidad, reputacion de dominio, modo
 Aprendi a publicar la parte visible del proyecto sin pagar hosting todavia. La pagina estatica se despliega con GitHub Pages desde la rama `main`. Como la API y n8n siguen locales, la pagina detecta cuando esta online y usa modo demo para no depender de `localhost`.
 
 Herramientas: GitHub Pages, deploy estatico, entorno local vs entorno online, modo demo seguro.
+
+## Fase 12 - Portfolio
+
+Cerre el proyecto para poder repasarlo y explicarlo mejor. Ordene el README, agregue una guia de portafolio, deje un mapa del codigo archivo por archivo y marque claramente que partes son demo online, que partes son locales y que faltaria conectar en un trabajo real.
+
+Herramientas: documentacion tecnica, README, explicacion de arquitectura, preparacion para entrevista, GitHub Pages y repaso de codigo.

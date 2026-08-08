@@ -23,6 +23,7 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc).replace(microsecond=0)
 
 
+# Separo nombre y apellido porque GoHighLevel normalmente los pide por separado.
 def split_name(full_name: str) -> tuple[str, str]:
     parts = clean_text(full_name).split()
     if not parts:
@@ -32,6 +33,7 @@ def split_name(full_name: str) -> tuple[str, str]:
     return parts[0], " ".join(parts[1:])
 
 
+# Resume el carrito en una sola linea para Sheets, CRM y mensajes al asesor.
 def product_summary(items: list[dict[str, Any]]) -> str:
     if not items:
         return "Producto por confirmar"
@@ -42,6 +44,7 @@ def product_summary(items: list[dict[str, Any]]) -> str:
     )
 
 
+# Calcula cuando deberia revisarse el lead segun la prioridad.
 def follow_up_due_at(priority: str) -> str:
     now = utc_now()
     if priority == "high":
@@ -51,6 +54,7 @@ def follow_up_due_at(priority: str) -> str:
     return (now + timedelta(days=3)).isoformat()
 
 
+# Crea etiquetas utiles para filtrar leads despues en Sheets o CRM.
 def lead_tags(quote: dict[str, Any]) -> list[str]:
     tags = [
         "electropatios",
@@ -67,6 +71,7 @@ def lead_tags(quote: dict[str, Any]) -> list[str]:
     return tags
 
 
+# Esta huella evita duplicar el mismo lead si n8n repite una ejecucion.
 def lead_duplicate_key(quote: dict[str, Any]) -> str:
     raw_key = quote.get("id") or "|".join(
         [
@@ -79,6 +84,7 @@ def lead_duplicate_key(quote: dict[str, Any]) -> str:
     return "lead:" + hashlib.sha1(str(raw_key).encode("utf-8")).hexdigest()
 
 
+# Arma la fila como me gustaria verla en Google Sheets.
 def build_sheet_row(lead: dict[str, Any]) -> dict[str, Any]:
     return {
         "fecha": lead["created_at"],
@@ -97,6 +103,7 @@ def build_sheet_row(lead: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# Prepara los datos con forma de CRM, aunque todavia no los envie reales.
 def build_ghl_payloads(lead: dict[str, Any]) -> dict[str, Any]:
     return {
         "contact": {
@@ -119,6 +126,7 @@ def build_ghl_payloads(lead: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# Mensaje corto para que un asesor entienda rapido que debe hacer.
 def build_advisor_message(lead: dict[str, Any]) -> str:
     return (
         f"Nuevo lead {lead['priority']} de Electropatios: {lead['full_name']} "
@@ -127,6 +135,7 @@ def build_advisor_message(lead: dict[str, Any]) -> str:
     )
 
 
+# Acepto payload con {"quote": ...} o una cotizacion directa para facilitar pruebas.
 def extract_quote(payload: dict[str, Any]) -> dict[str, Any]:
     quote = payload.get("quote")
     if isinstance(quote, dict):
@@ -136,6 +145,7 @@ def extract_quote(payload: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+# Funcion principal de esta cajita: convierte cotizacion en lead.
 def build_lead_record(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     quote = extract_quote(payload)
     errors: list[str] = []
@@ -192,6 +202,7 @@ def build_lead_record(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str
     return lead, []
 
 
+# Prepara una notificacion interna sin conectar WhatsApp ni email real.
 def build_notification(payload: dict[str, Any]) -> dict[str, Any]:
     lead = payload.get("lead") if isinstance(payload.get("lead"), dict) else {}
     message = clean_text(payload.get("advisor_message") or lead.get("advisor_message"))

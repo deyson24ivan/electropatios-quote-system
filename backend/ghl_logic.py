@@ -31,10 +31,12 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+# Convierte variables como "true" o "si" en booleano para activar integraciones.
 def env_enabled(value: str | None) -> bool:
     return clean_text(value).lower() in {"1", "true", "yes", "si", "on"}
 
 
+# Oculto tokens en respuestas para no mostrar secretos por accidente.
 def mask_secret(value: str) -> str:
     value = clean_text(value)
     if not value:
@@ -44,10 +46,12 @@ def mask_secret(value: str) -> str:
     return "***" + value[-4:]
 
 
+# Leo variables de entorno reales o un diccionario falso durante pruebas.
 def get_env(env: Mapping[str, str] | None = None) -> Mapping[str, str]:
     return env or os.environ
 
 
+# Reuno la configuracion CRM en un solo lugar para no leer os.environ por todo el codigo.
 def crm_settings(env: Mapping[str, str] | None = None) -> dict[str, Any]:
     values = get_env(env)
     api_base = clean_text(values.get("GHL_API_BASE") or "https://services.leadconnectorhq.com").rstrip("/")
@@ -68,6 +72,7 @@ def crm_settings(env: Mapping[str, str] | None = None) -> dict[str, Any]:
     }
 
 
+# Acepto lead dentro de {"lead": ...} o lead directo para facilitar n8n y pruebas.
 def extract_lead(payload: dict[str, Any]) -> dict[str, Any]:
     lead = payload.get("lead")
     if isinstance(lead, dict):
@@ -77,6 +82,7 @@ def extract_lead(payload: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+# Valido lo minimo antes de preparar un contacto u oportunidad en CRM.
 def validate_lead_for_crm(lead: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if not lead.get("id"):
@@ -90,6 +96,7 @@ def validate_lead_for_crm(lead: dict[str, Any]) -> list[str]:
     return errors
 
 
+# Escoge la etapa CRM segun la prioridad del lead.
 def stage_for_lead(lead: dict[str, Any], settings: dict[str, Any]) -> dict[str, str]:
     priority = slug_text(lead.get("priority") or "low")
     env_name = STAGE_ENV_BY_PRIORITY.get(priority, "GHL_STAGE_LOW")
@@ -103,6 +110,7 @@ def stage_for_lead(lead: dict[str, Any], settings: dict[str, Any]) -> dict[str, 
     }
 
 
+# Si falta algo sensible, bloqueo el envio real y lo dejo como revision.
 def missing_live_config(settings: dict[str, Any], stage: dict[str, str]) -> list[str]:
     missing = []
     if not settings["private_token"]:
@@ -116,6 +124,7 @@ def missing_live_config(settings: dict[str, Any], stage: dict[str, str]) -> list
     return missing
 
 
+# Arma headers como si fuera a llamar la API, pero con token oculto.
 def request_headers(settings: dict[str, Any]) -> dict[str, str]:
     token = settings["private_token"]
     return {
@@ -126,6 +135,7 @@ def request_headers(settings: dict[str, Any]) -> dict[str, str]:
     }
 
 
+# Cuerpo para crear o actualizar contacto en GoHighLevel.
 def build_contact_body(lead: dict[str, Any], settings: dict[str, Any]) -> dict[str, Any]:
     body = {
         "firstName": clean_text(lead.get("first_name")),
@@ -153,6 +163,7 @@ def build_contact_body(lead: dict[str, Any], settings: dict[str, Any]) -> dict[s
     return body
 
 
+# Cuerpo para crear la oportunidad comercial dentro del pipeline.
 def build_opportunity_body(lead: dict[str, Any], settings: dict[str, Any], stage: dict[str, str]) -> dict[str, Any]:
     return {
         "pipelineId": settings["pipeline_id"] or "<GHL_PIPELINE_ID>",
@@ -172,6 +183,7 @@ def build_opportunity_body(lead: dict[str, Any], settings: dict[str, Any], stage
     }
 
 
+# Junta las dos solicitudes que revisaria antes de activar el CRM real.
 def build_crm_requests(lead: dict[str, Any], settings: dict[str, Any]) -> dict[str, Any]:
     stage = stage_for_lead(lead, settings)
     headers = request_headers(settings)
@@ -193,6 +205,7 @@ def build_crm_requests(lead: dict[str, Any], settings: dict[str, Any]) -> dict[s
     }
 
 
+# Decide el estado del intento CRM sin enviar datos reales.
 def crm_status(settings: dict[str, Any], missing_config: list[str]) -> tuple[str, str, bool]:
     if not settings["enabled"]:
         return "safe_mode", "dry_run_prepared", False
@@ -201,6 +214,7 @@ def crm_status(settings: dict[str, Any], missing_config: list[str]) -> tuple[str
     return "live_check", "ready_for_live_sync", False
 
 
+# Funcion principal: arma el intento de sincronizacion con GoHighLevel.
 def build_crm_sync_record(
     payload: dict[str, Any],
     env: Mapping[str, str] | None = None,
